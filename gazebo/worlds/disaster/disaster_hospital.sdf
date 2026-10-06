@@ -9984,39 +9984,78 @@
         <falloff>0</falloff>
       </spot>
     </light>
-    <model name="outside_ground">
+    <model name="outside_ground_north">
       <static>true</static>
-
-      <!--
-        Hospital floor top ≈ 0.175474 m
-        Ground thickness = 0.02 m
-        Center Z = 0.175474 - 0.01 = 0.165474
-      -->
-      <pose>0 0 0.165474 0 0 0</pose>
+      <pose>0 36.25 0.165474 0 0 0</pose>
 
       <link name="link">
 
         <collision name="collision">
           <geometry>
             <box>
-              <size>120 120 0.02</size>
+              <size>120.0 47.5 0.02</size>
             </box>
           </geometry>
         </collision>
 
-        <visual name="visual">
+        
+
+      </link>
+    </model>
+
+    <model name="outside_ground_south">
+      <static>true</static>
+      <pose>0 -36.25 0.165474 0 0 0</pose>
+
+      <link name="link">
+
+        <collision name="collision">
           <geometry>
             <box>
-              <size>120 120 0.02</size>
+              <size>120.0 47.5 0.02</size>
             </box>
           </geometry>
+        </collision>
 
-          <material>
-            <ambient>0.55 0.55 0.55 1</ambient>
-            <diffuse>0.55 0.55 0.55 1</diffuse>
-            <specular>0.05 0.05 0.05 1</specular>
-          </material>
-        </visual>
+        
+
+      </link>
+    </model>
+
+    <model name="outside_ground_east">
+      <static>true</static>
+      <pose>44.0 0 0.165474 0 0 0</pose>
+
+      <link name="link">
+
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>32.0 25.0 0.02</size>
+            </box>
+          </geometry>
+        </collision>
+
+        
+
+      </link>
+    </model>
+
+    <model name="outside_ground_west">
+      <static>true</static>
+      <pose>-44.0 0 0.165474 0 0 0</pose>
+
+      <link name="link">
+
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>32.0 25.0 0.02</size>
+            </box>
+          </geometry>
+        </collision>
+
+        
 
       </link>
     </model>

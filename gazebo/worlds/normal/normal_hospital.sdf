@@ -36,18 +36,28 @@
 
     <gravity>0 0 -9.8</gravity>
     <physics default="0" name="default_physics" type="ode">
-      <max_step_size>0.001</max_step_size>
+      <max_step_size>0.002</max_step_size>
       <real_time_factor>1</real_time_factor>
-      <real_time_update_rate>1000</real_time_update_rate>
+      <real_time_update_rate>500</real_time_update_rate>
     </physics>
     <scene>
       <ambient>0.85 0.85 0.85 1</ambient>
       <background>0.55 0.55 0.55 1</background>
       <shadows>false</shadows>
     </scene>
-    <include>
-      <uri>model://sun</uri>
-    </include>
+    <light type="directional" name="sun">
+      <cast_shadows>false</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 -0.5 -1</direction>
+    </light>
     <include>
       <uri>model://ground_plane</uri>
       <pose>0 0 -0.1 0 -0 0</pose>
@@ -77,8 +87,8 @@
       <pose>-11.0216 -13.8069 0 0 -0 1.55358</pose>
     </include>
     <include>
-      <uri>model://aws_robomaker_hospital_curtain_closed_01</uri>
-      <name>aws_robomaker_hospital_curtain_closed_01_1</name>
+      <uri>model://aws_robomaker_hospital_curtain_open_01</uri>
+      <name>converted_curtain_open_01_1</name>
       <static>true</static>
       <pose>-11.022 -7.27757 0 0 -0 1.57907</pose>
     </include>
@@ -371,18 +381,6 @@
       <pose>6.41259 8.18749 0 0.000578 -0 -1.56624</pose>
     </include>
     <include>
-      <uri>model://Drawer</uri>
-      <name>Drawer_1</name>
-      <static>true</static>
-      <pose>3.18472 -6.54185 0 0 0 -1.55907</pose>
-    </include>
-    <include>
-      <uri>model://Drawer</uri>
-      <name>Drawer_2</name>
-      <static>true</static>
-      <pose>3.19085 -5.94838 0 0 0 -1.55907</pose>
-    </include>
-    <include>
       <uri>model://OfficeChairBlack</uri>
       <name>OfficeChairBlack_1</name>
       <static>true</static>
@@ -411,18 +409,6 @@
       <name>aws_robomaker_residential_PortraitA_01_3</name>
       <static>true</static>
       <pose>-1.97245 -6.9216 1.41115 0 -0 0</pose>
-    </include>
-    <include>
-      <uri>model://Drawer</uri>
-      <name>Drawer_3</name>
-      <static>true</static>
-      <pose>-3.02001 -6.54343 0 0 -0 1.56555</pose>
-    </include>
-    <include>
-      <uri>model://Drawer</uri>
-      <name>Drawer_4</name>
-      <static>true</static>
-      <pose>-2.99762 -5.94782 0 0 -0 1.56555</pose>
     </include>
     <include>
       <uri>model://aws_robomaker_residential_PortraitD_02</uri>
@@ -573,18 +559,6 @@
       <name>aws_robomaker_hospital_ramp_01_1</name>
       <static>true</static>
       <pose>-1.70996 16.3685 0 0 -0 0</pose>
-    </include>
-    <include>
-      <uri>model://AnesthesiaMachine</uri>
-      <name>AnesthesiaMachine_1</name>
-      <static>true</static>
-      <pose>-1.28478 -21.1127 0 0 0 -3.12971</pose>
-    </include>
-    <include>
-      <uri>model://TrolleyBedPatient</uri>
-      <name>TrolleyBedPatient_1</name>
-      <static>true</static>
-      <pose>-1.83202 -19.2612 0 0 -0 0</pose>
     </include>
     <include>
       <uri>model://Scrubs</uri>
@@ -899,14 +873,14 @@
       <pose>11.0051 -6.91002 0 0 0 -1.58737</pose>
     </include>
     <include>
-      <uri>model://aws_robomaker_hospital_curtain_closed_01</uri>
-      <name>aws_robomaker_hospital_curtain_closed_01_2</name>
+      <uri>model://aws_robomaker_hospital_curtain_open_01</uri>
+      <name>converted_curtain_open_01_2</name>
       <static>true</static>
       <pose>11.0303 -3.70124 0 0 0 -1.58306</pose>
     </include>
     <include>
-      <uri>model://aws_robomaker_hospital_curtain_closed_01</uri>
-      <name>aws_robomaker_hospital_curtain_closed_01_3</name>
+      <uri>model://aws_robomaker_hospital_curtain_open_01</uri>
+      <name>converted_curtain_open_01_3</name>
       <static>true</static>
       <pose>10.9586 0.159483 0 0 0 -1.58306</pose>
     </include>
@@ -929,18 +903,6 @@
       <pose>9.15016 3.44263 -9e-06 1e-06 2e-06 0</pose>
     </include>
     <include>
-      <uri>model://aws_robomaker_warehouse_ClutteringC_01</uri>
-      <name>aws_robomaker_warehouse_ClutteringC_01_1</name>
-      <static>true</static>
-      <pose>-10.5553 15.0297 0 0 -0 0</pose>
-    </include>
-    <include>
-      <uri>model://aws_robomaker_warehouse_ClutteringA_01</uri>
-      <name>aws_robomaker_warehouse_ClutteringA_01_1</name>
-      <static>true</static>
-      <pose>10.8233 15.2153 0 0 -0 0</pose>
-    </include>
-    <include>
       <uri>model://StorageRack</uri>
       <name>StorageRack_3</name>
       <static>true</static>
@@ -959,26 +921,26 @@
       <pose>10.294 -10.577 -7e-06 3e-06 -0 3.13389</pose>
     </include>
     <include>
-      <uri>model://aws_robomaker_hospital_curtain_closed_01</uri>
-      <name>aws_robomaker_hospital_curtain_closed_01_4</name>
+      <uri>model://aws_robomaker_hospital_curtain_open_01</uri>
+      <name>converted_curtain_open_01_4</name>
       <static>true</static>
       <pose>10.9819 -26.2149 0 0 0 -1.58306</pose>
     </include>
     <include>
-      <uri>model://aws_robomaker_hospital_curtain_closed_01</uri>
-      <name>aws_robomaker_hospital_curtain_closed_01_5</name>
+      <uri>model://aws_robomaker_hospital_curtain_open_01</uri>
+      <name>converted_curtain_open_01_5</name>
       <static>true</static>
       <pose>1.31506 -30.5771 0 0 -0 3.1401</pose>
     </include>
     <include>
-      <uri>model://aws_robomaker_hospital_curtain_closed_01</uri>
-      <name>aws_robomaker_hospital_curtain_closed_01_6</name>
+      <uri>model://aws_robomaker_hospital_curtain_open_01</uri>
+      <name>converted_curtain_open_01_6</name>
       <static>true</static>
       <pose>5.49659 -30.5364 0 0 -0 3.1401</pose>
     </include>
     <include>
-      <uri>model://aws_robomaker_hospital_curtain_closed_01</uri>
-      <name>aws_robomaker_hospital_curtain_closed_01_7</name>
+      <uri>model://aws_robomaker_hospital_curtain_open_01</uri>
+      <name>converted_curtain_open_01_7</name>
       <static>true</static>
       <pose>9.80048 -30.5918 0 0 -0 3.1401</pose>
     </include>
@@ -987,12 +949,6 @@
       <name>FemaleVisitorSit_2</name>
       <static>true</static>
       <pose>7.85005 6.59766 0 0 0 -1.5621</pose>
-    </include>
-    <include>
-      <uri>model://InstrumentCart1</uri>
-      <name>InstrumentCart1_3</name>
-      <static>true</static>
-      <pose>-1.83539 -17.5879 0 0 -0 0</pose>
     </include>
     <include>
       <uri>model://ParkingTrolleyMax</uri>
@@ -1023,12 +979,6 @@
       <name>Chair_3</name>
       <static>true</static>
       <pose>-1.37633 -0.795802 0 -1e-06 0 -1.54998</pose>
-    </include>
-    <include>
-      <uri>model://XRayMachine</uri>
-      <name>XRayMachine_1</name>
-      <static>true</static>
-      <pose>1.79424 -21.3329 0 0 -0 0</pose>
     </include>
     <include>
       <uri>model://IVStand</uri>
@@ -1102,80 +1052,33 @@
       <static>true</static>
       <pose>1.30985 -0.727185 -0 0 0 -1.53446</pose>
     </include>
-    <model name="outside_ground_north">
+  
+    <model name="outside_collision_plane">
       <static>true</static>
-      <pose>0 36.25 0.165474 0 0 0</pose>
+
+      <!-- Slightly below hospital floor surface -->
+      <pose>0 0 0.174 0 0 0</pose>
 
       <link name="link">
-
         <collision name="collision">
           <geometry>
-            <box>
-              <size>120.0 47.5 0.02</size>
-            </box>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>120 120</size>
+            </plane>
           </geometry>
+
+          <surface>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>50</mu2>
+              </ode>
+            </friction>
+          </surface>
         </collision>
-
-        
-
       </link>
     </model>
 
-    <model name="outside_ground_south">
-      <static>true</static>
-      <pose>0 -36.25 0.165474 0 0 0</pose>
-
-      <link name="link">
-
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>120.0 47.5 0.02</size>
-            </box>
-          </geometry>
-        </collision>
-
-        
-
-      </link>
-    </model>
-
-    <model name="outside_ground_east">
-      <static>true</static>
-      <pose>44.0 0 0.165474 0 0 0</pose>
-
-      <link name="link">
-
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>32.0 25.0 0.02</size>
-            </box>
-          </geometry>
-        </collision>
-
-        
-
-      </link>
-    </model>
-
-    <model name="outside_ground_west">
-      <static>true</static>
-      <pose>-44.0 0 0.165474 0 0 0</pose>
-
-      <link name="link">
-
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>32.0 25.0 0.02</size>
-            </box>
-          </geometry>
-        </collision>
-
-        
-
-      </link>
-    </model>
   </world>
 </sdf>

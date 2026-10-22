@@ -1,0 +1,95 @@
+diff --git a/include/slam_toolbox/slam_toolbox_common.hpp b/include/slam_toolbox/slam_toolbox_common.hpp
+index 4e3a5b8..e60baf5 100644
+--- a/include/slam_toolbox/slam_toolbox_common.hpp
++++ b/include/slam_toolbox/slam_toolbox_common.hpp
+@@ -151,6 +151,7 @@ protected:
+   double position_covariance_scale_;
+   double yaw_covariance_scale_;
+   bool first_measurement_, enable_interactive_mode_;
++  bool check_min_dist_and_heading_precisely_;
+ 
+   // Book keeping
+   std::unique_ptr<mapper_utils::SMapper> smapper_;
+diff --git a/lib/karto_sdk/include/karto_sdk/Mapper.h b/lib/karto_sdk/include/karto_sdk/Mapper.h
+index 1372377..9f09d63 100644
+--- a/lib/karto_sdk/include/karto_sdk/Mapper.h
++++ b/lib/karto_sdk/include/karto_sdk/Mapper.h
+@@ -2424,6 +2424,7 @@ public:
+   double getParamMinimumTimeInterval();
+   double getParamMinimumTravelDistance();
+   double getParamMinimumTravelHeading();
++  double getParamMinimumTravelHeadingInRadians();
+   int getParamScanBufferSize();
+   double getParamScanBufferMaximumScanDistance();
+   double getParamLinkMatchMinimumResponseFine();
+diff --git a/lib/karto_sdk/src/Mapper.cpp b/lib/karto_sdk/src/Mapper.cpp
+index e969404..6ef0688 100644
+--- a/lib/karto_sdk/src/Mapper.cpp
++++ b/lib/karto_sdk/src/Mapper.cpp
+@@ -2333,6 +2333,11 @@ double Mapper::getParamMinimumTravelHeading()
+   return math::RadiansToDegrees(static_cast<double>(m_pMinimumTravelHeading->GetValue()));
+ }
+ 
++double Mapper::getParamMinimumTravelHeadingInRadians()
++{
++  return static_cast<double>(m_pMinimumTravelHeading->GetValue());
++}
++
+ int Mapper::getParamScanBufferSize()
+ {
+   return static_cast<int>(m_pScanBufferSize->GetValue());
+diff --git a/src/slam_toolbox_common.cpp b/src/slam_toolbox_common.cpp
+index 77ac6b1..cc3a753 100644
+--- a/src/slam_toolbox_common.cpp
++++ b/src/slam_toolbox_common.cpp
+@@ -17,6 +17,7 @@
+ 
+ /* Author: Steven Macenski */
+ #include <memory>
++#include <cmath>
+ #include <vector>
+ #include <string>
+ #include <chrono>
+@@ -179,6 +180,10 @@ void SlamToolbox::setParams()
+   tmp_val = this->declare_parameter("minimum_time_interval", tmp_val);
+   minimum_time_interval_ = rclcpp::Duration::from_seconds(tmp_val);
+ 
++  // Local Humble backport of upstream PR #808 / #819.
++  check_min_dist_and_heading_precisely_ =
++    this->declare_parameter<bool>("check_min_dist_and_heading_precisely", false);
++
+   bool debug = false;
+   debug = this->declare_parameter("debug_logging", debug);
+   if (debug) {
+@@ -509,6 +514,8 @@ bool SlamToolbox::shouldProcessScan(
+   static double min_dist2 =
+     smapper_->getMapper()->getParamMinimumTravelDistance() *
+     smapper_->getMapper()->getParamMinimumTravelDistance();
++  static double min_rotation =
++    smapper_->getMapper()->getParamMinimumTravelHeadingInRadians();
+   static int scan_ctr = 0;
+   scan_ctr++;
+ 
+@@ -535,9 +542,20 @@ bool SlamToolbox::shouldProcessScan(
+     return false;
+   }
+ 
+-  // check moved enough, within 10% for correction error
++  // Keep the upstream initial-scan stabilization guard.
++  if (scan_ctr < 5) {
++    return false;
++  }
++
+   const double dist2 = last_pose.SquaredDistance(pose);
+-  if (dist2 < 0.8 * min_dist2 || scan_ctr < 5) {
++  if (check_min_dist_and_heading_precisely_) {
++    const double heading_diff = std::fabs(
++      karto::math::NormalizeAngle(pose.GetHeading() - last_pose.GetHeading()));
++    if (dist2 < min_dist2 && heading_diff < min_rotation) {
++      return false;
++    }
++  } else if (dist2 < 0.8 * min_dist2) {
++    // Option disabled: preserve the 2.6.10 distance gate.
+     return false;
+   }
+ 

@@ -1,0 +1,20 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# ROS build outputs
+build/
+install/
+log/
+
+# Large SLAM serialized state
+/maps/**/*.posegraph
+/maps/**/*.data
+
+# Temporary SLAM diagnostics
+/data/slam_diagnostics/
+
+# Temporary backups
+*.yaml.bak_*
+*.sdf.bak_*
+/gazebo/models/

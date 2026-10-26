@@ -18,3 +18,11 @@ log/
 *.yaml.bak_*
 *.sdf.bak_*
 /gazebo/models/
+
+# Generated navigation experiment logs
+/logs/**/*.csv
+/logs/**/*.json
+
+# Python generated files
+__pycache__/
+*.pyc

@@ -375,12 +375,6 @@
       <pose>1.07736 -8.59036 -6.7e-05 0 1e-06 0</pose>
     </include>
     <include>
-      <uri>model://MaleVisitorSit</uri>
-      <name>MaleVisitorSit_1</name>
-      <static>true</static>
-      <pose>6.41259 8.18749 0 0.000578 -0 -1.56624</pose>
-    </include>
-    <include>
       <uri>model://OfficeChairBlack</uri>
       <name>OfficeChairBlack_1</name>
       <static>true</static>
@@ -507,18 +501,6 @@
       <pose>-11.1876 4.2888 0 0 -0 3.1387</pose>
     </include>
     <include>
-      <uri>model://CGMClassic</uri>
-      <name>CGMClassic_5</name>
-      <static>true</static>
-      <pose>-11.0106 8.9505 -0.008203 -0.035019 -0.000392 3.13388</pose>
-    </include>
-    <include>
-      <uri>model://CGMClassic</uri>
-      <name>CGMClassic_6</name>
-      <static>true</static>
-      <pose>-11.025 7.10335 0 -0.035021 1.8e-05 -3.13762</pose>
-    </include>
-    <include>
       <uri>model://BedTable</uri>
       <name>BedTable_1</name>
       <static>true</static>
@@ -607,12 +589,6 @@
       <name>InstrumentCart1_2</name>
       <static>true</static>
       <pose>-11.8071 -16.1825 0 0 -0 1.56702</pose>
-    </include>
-    <include>
-      <uri>model://InstrumentCart2</uri>
-      <name>InstrumentCart2_3</name>
-      <static>true</static>
-      <pose>-0.869537 -17.7436 0 0 0 -0.002595</pose>
     </include>
     <include>
       <uri>model://StorageRackCovered</uri>
@@ -765,18 +741,6 @@
       <pose>-10.2134 7.89752 1.40573 0 -0 0</pose>
     </include>
     <include>
-      <uri>model://CGMClassic</uri>
-      <name>CGMClassic_7</name>
-      <static>true</static>
-      <pose>10.6166 9.06291 -0.008203 -0.03501 0.000885 -3.11285</pose>
-    </include>
-    <include>
-      <uri>model://CGMClassic</uri>
-      <name>CGMClassic_8</name>
-      <static>true</static>
-      <pose>10.6006 6.90956 -0.008203 -0.035003 0.001133 -3.10576</pose>
-    </include>
-    <include>
       <uri>model://MetalCabinet</uri>
       <name>MetalCabinet_3</name>
       <static>true</static>
@@ -837,12 +801,6 @@
       <pose>0.715846 -17.1496 -0.000121 -1e-06 -0 0</pose>
     </include>
     <include>
-      <uri>model://PatientFSit</uri>
-      <name>PatientFSit_1</name>
-      <static>true</static>
-      <pose>-10.8902 9.18683 0.228965 0 -0 1.58161</pose>
-    </include>
-    <include>
       <uri>model://MaleVisitorOnPhone</uri>
       <name>MaleVisitorOnPhone_1</name>
       <static>true</static>
@@ -853,12 +811,6 @@
       <name>FemaleVisitor_1</name>
       <static>true</static>
       <pose>0.416835 7.44353 0 0 -0 0</pose>
-    </include>
-    <include>
-      <uri>model://MaleVisitorSit</uri>
-      <name>MaleVisitorSit_2</name>
-      <static>true</static>
-      <pose>-5.98588 6.41261 0 0 -0 1.58808</pose>
     </include>
     <include>
       <uri>model://Scrubs</uri>
@@ -1009,12 +961,6 @@
       <name>Scrubs_7</name>
       <static>true</static>
       <pose>-9.75875 -2.67552 0 0 -0 0</pose>
-    </include>
-    <include>
-      <uri>model://BPCart</uri>
-      <name>BPCart_1</name>
-      <static>true</static>
-      <pose>-10.1788 11.173 0.003446 1e-06 -0 0.003096</pose>
     </include>
     <include>
       <uri>model://BPCart</uri>

@@ -153,8 +153,8 @@ controller_server:
       regulated_linear_scaling_min_radius: 0.9
       regulated_linear_scaling_min_speed: 0.05
       use_rotate_to_heading: true
-      rotate_to_heading_min_angle: 0.785
-      rotate_to_heading_angular_vel: 0.6
+      rotate_to_heading_min_angle: 0.45
+      rotate_to_heading_angular_vel: 1.0
       max_angular_accel: 3.2
       allow_reversing: false
       transform_tolerance: 0.2

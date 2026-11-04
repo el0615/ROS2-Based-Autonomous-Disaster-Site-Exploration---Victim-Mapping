@@ -1,0 +1,10 @@
+{
+  "equivalence_pass": true,
+  "synthetic_comparisons": 324,
+  "created_utc": "2026-11-02T07:00:52.857977+00:00",
+  "sha256": {
+    "zb_visibility_dda.c": "aca9f048247acda0de4ad35db4353567de226d7c2cb124a109fa37d4797bb98e",
+    "zb_visibility_c.py": "84c4021bfc70ec0bf64dcd21c54af9c3bd1dd2904135baac7e09b3fd9b9738ab",
+    "libzb_visibility.so": "8df33438280509762bb82daac37971eca71738646931bc9bee7e0b56e1eb01ee"
+  }
+}

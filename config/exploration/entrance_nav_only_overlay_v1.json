@@ -1,0 +1,176 @@
+{
+  "schema": "j100_entrance_local_navigation_overlay_v1",
+  "description": "Only 81 approved unknown pixels adjacent to original left-edge doorway; NOT coverage and NOT a PGM overwrite",
+  "source_reference_pgm_sha256": "82a1384d0550aef0c4da5018ee6fb42b3b4abcb0503e6146639ff4376d01fcc2",
+  "reference_known_free_sha256": "f6f0679a3335142c7cc1bd78ebd79c1267f835b9de9f2039b764df1eae8f0ffd",
+  "geometry": {
+    "width": 1127,
+    "height": 507,
+    "resolution": 0.05,
+    "origin": [
+      -0.561,
+      -13.9,
+      0.0
+    ]
+  },
+  "world_roi": {
+    "x_min": -0.15,
+    "x_max": 0.45,
+    "y_min": -0.4,
+    "y_max": 0.4
+  },
+  "start_pose_window": {
+    "x_min": -0.4,
+    "x_max": 0.9,
+    "y_min": -0.85,
+    "y_max": 0.85
+  },
+  "cell_count": 81,
+  "cell_rows": [
+    [
+      270,
+      [
+        [
+          8,
+          13
+        ]
+      ]
+    ],
+    [
+      271,
+      [
+        [
+          8,
+          13
+        ]
+      ]
+    ],
+    [
+      272,
+      [
+        [
+          8,
+          13
+        ]
+      ]
+    ],
+    [
+      273,
+      [
+        [
+          8,
+          14
+        ]
+      ]
+    ],
+    [
+      274,
+      [
+        [
+          8,
+          14
+        ]
+      ]
+    ],
+    [
+      275,
+      [
+        [
+          8,
+          14
+        ]
+      ]
+    ],
+    [
+      276,
+      [
+        [
+          8,
+          14
+        ]
+      ]
+    ],
+    [
+      277,
+      [
+        [
+          8,
+          14
+        ]
+      ]
+    ],
+    [
+      278,
+      [
+        [
+          8,
+          14
+        ]
+      ]
+    ],
+    [
+      279,
+      [
+        [
+          8,
+          13
+        ]
+      ]
+    ],
+    [
+      280,
+      [
+        [
+          8,
+          13
+        ]
+      ]
+    ],
+    [
+      281,
+      [
+        [
+          8,
+          13
+        ]
+      ]
+    ],
+    [
+      282,
+      [
+        [
+          8,
+          12
+        ]
+      ]
+    ],
+    [
+      283,
+      [
+        [
+          8,
+          12
+        ]
+      ]
+    ],
+    [
+      284,
+      [
+        [
+          8,
+          12
+        ]
+      ]
+    ],
+    [
+      285,
+      [
+        [
+          8,
+          11
+        ]
+      ]
+    ]
+  ],
+  "always_require_live_global_costmap_zero": true
+}

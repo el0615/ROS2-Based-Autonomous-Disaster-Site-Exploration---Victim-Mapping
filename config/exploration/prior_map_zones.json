@@ -1,0 +1,218 @@
+{
+  "description": "Normal Hospital prior-map spatial sectors; geometry-only draft, NOT confirmed room/ward names.",
+  "map": {
+    "width": 1127,
+    "height": 507,
+    "resolution": 0.05,
+    "origin": [
+      -0.561,
+      -13.9,
+      0.0
+    ],
+    "reference": "maps/normal/normal_hospital_B_loopOFF_buffer20_IMU_fixed_FINAL_20261020.yaml"
+  },
+  "definitions": {
+    "pgm_rect": "[left,top,right,bottom] in original PGM image pixels; origin upper-left",
+    "note": "Spatial sectors are for initial coverage planning; adjust them after visually checking actual hospital rooms, corridors and doors."
+  },
+  "zones": [
+    {
+      "id": "U01",
+      "name": "Upper sector 1",
+      "pgm_rect": [
+        0,
+        0,
+        190,
+        145
+      ],
+      "priority": 1.0
+    },
+    {
+      "id": "U02",
+      "name": "Upper sector 2",
+      "pgm_rect": [
+        190,
+        0,
+        370,
+        145
+      ],
+      "priority": 1.0
+    },
+    {
+      "id": "U03",
+      "name": "Upper sector 3",
+      "pgm_rect": [
+        370,
+        0,
+        560,
+        145
+      ],
+      "priority": 1.0
+    },
+    {
+      "id": "U04",
+      "name": "Upper sector 4",
+      "pgm_rect": [
+        560,
+        0,
+        750,
+        145
+      ],
+      "priority": 1.0
+    },
+    {
+      "id": "U05",
+      "name": "Upper sector 5",
+      "pgm_rect": [
+        750,
+        0,
+        940,
+        145
+      ],
+      "priority": 1.0
+    },
+    {
+      "id": "U06",
+      "name": "Upper sector 6",
+      "pgm_rect": [
+        940,
+        0,
+        1127,
+        145
+      ],
+      "priority": 1.0
+    },
+    {
+      "id": "C01",
+      "name": "Central sector 1",
+      "pgm_rect": [
+        0,
+        145,
+        190,
+        375
+      ],
+      "priority": 1.0
+    },
+    {
+      "id": "C02",
+      "name": "Central sector 2",
+      "pgm_rect": [
+        190,
+        145,
+        370,
+        375
+      ],
+      "priority": 1.0
+    },
+    {
+      "id": "C03",
+      "name": "Central sector 3",
+      "pgm_rect": [
+        370,
+        145,
+        560,
+        375
+      ],
+      "priority": 1.0
+    },
+    {
+      "id": "C04",
+      "name": "Central sector 4",
+      "pgm_rect": [
+        560,
+        145,
+        750,
+        375
+      ],
+      "priority": 1.0
+    },
+    {
+      "id": "C05",
+      "name": "Central sector 5",
+      "pgm_rect": [
+        750,
+        145,
+        940,
+        375
+      ],
+      "priority": 1.0
+    },
+    {
+      "id": "C06",
+      "name": "Central sector 6",
+      "pgm_rect": [
+        940,
+        145,
+        1127,
+        375
+      ],
+      "priority": 1.0
+    },
+    {
+      "id": "L01",
+      "name": "Lower sector 1",
+      "pgm_rect": [
+        0,
+        375,
+        190,
+        507
+      ],
+      "priority": 1.0
+    },
+    {
+      "id": "L02",
+      "name": "Lower sector 2",
+      "pgm_rect": [
+        190,
+        375,
+        370,
+        507
+      ],
+      "priority": 1.0
+    },
+    {
+      "id": "L03",
+      "name": "Lower sector 3",
+      "pgm_rect": [
+        370,
+        375,
+        560,
+        507
+      ],
+      "priority": 1.0
+    },
+    {
+      "id": "L04",
+      "name": "Lower sector 4",
+      "pgm_rect": [
+        560,
+        375,
+        750,
+        507
+      ],
+      "priority": 1.0
+    },
+    {
+      "id": "L05",
+      "name": "Lower sector 5",
+      "pgm_rect": [
+        750,
+        375,
+        940,
+        507
+      ],
+      "priority": 1.0
+    },
+    {
+      "id": "L06",
+      "name": "Lower sector 6",
+      "pgm_rect": [
+        940,
+        375,
+        1127,
+        507
+      ],
+      "priority": 1.0
+    }
+  ]
+}

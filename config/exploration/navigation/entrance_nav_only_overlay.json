@@ -1,0 +1,176 @@
+{
+  "schema": "j100_entrance_local_navigation_overlay_v1",
+  "description": "Bedless v1 validated reuse of exact 81 original entrance-only unknown cells; outside Coverage; Map+free fingerprint retargeted after 2378 bed edits elsewhere. Live global costmap zero remains mandatory.",
+  "source_reference_pgm_sha256": "b59439efb90b354a0be824bfba3e3f7eaecb876e0a8253d6a7b0306770414b7c",
+  "reference_known_free_sha256": "27cae0589f455c152c5d7f437fc62f4bb93db37bb47cdb59c656e5bb273e3cac",
+  "geometry": {
+    "width": 1127,
+    "height": 507,
+    "resolution": 0.05,
+    "origin": [
+      -0.561,
+      -13.9,
+      0.0
+    ]
+  },
+  "world_roi": {
+    "x_min": -0.15,
+    "x_max": 0.45,
+    "y_min": -0.4,
+    "y_max": 0.4
+  },
+  "start_pose_window": {
+    "x_min": -0.4,
+    "x_max": 0.9,
+    "y_min": -0.85,
+    "y_max": 0.85
+  },
+  "cell_count": 81,
+  "cell_rows": [
+    [
+      270,
+      [
+        [
+          8,
+          13
+        ]
+      ]
+    ],
+    [
+      271,
+      [
+        [
+          8,
+          13
+        ]
+      ]
+    ],
+    [
+      272,
+      [
+        [
+          8,
+          13
+        ]
+      ]
+    ],
+    [
+      273,
+      [
+        [
+          8,
+          14
+        ]
+      ]
+    ],
+    [
+      274,
+      [
+        [
+          8,
+          14
+        ]
+      ]
+    ],
+    [
+      275,
+      [
+        [
+          8,
+          14
+        ]
+      ]
+    ],
+    [
+      276,
+      [
+        [
+          8,
+          14
+        ]
+      ]
+    ],
+    [
+      277,
+      [
+        [
+          8,
+          14
+        ]
+      ]
+    ],
+    [
+      278,
+      [
+        [
+          8,
+          14
+        ]
+      ]
+    ],
+    [
+      279,
+      [
+        [
+          8,
+          13
+        ]
+      ]
+    ],
+    [
+      280,
+      [
+        [
+          8,
+          13
+        ]
+      ]
+    ],
+    [
+      281,
+      [
+        [
+          8,
+          13
+        ]
+      ]
+    ],
+    [
+      282,
+      [
+        [
+          8,
+          12
+        ]
+      ]
+    ],
+    [
+      283,
+      [
+        [
+          8,
+          12
+        ]
+      ]
+    ],
+    [
+      284,
+      [
+        [
+          8,
+          12
+        ]
+      ]
+    ],
+    [
+      285,
+      [
+        [
+          8,
+          11
+        ]
+      ]
+    ]
+  ],
+  "always_require_live_global_costmap_zero": true
+}

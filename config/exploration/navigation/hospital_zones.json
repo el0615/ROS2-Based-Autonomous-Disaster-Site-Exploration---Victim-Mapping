@@ -1,0 +1,2455 @@
+{
+  "schema": "hospital_zones_visualization_v1",
+  "status": "VISUALIZATION_ONLY_PENDING_RVIZ_ALIGNMENT",
+  "map": {
+    "width": 1127,
+    "height": 507,
+    "resolution": 0.05,
+    "origin": [
+      -0.561,
+      -13.9,
+      0.0
+    ],
+    "mode": "trinary",
+    "negate": 0,
+    "free_thresh": 0.25,
+    "occupied_thresh": 0.65,
+    "frame_id": "map",
+    "reference_yaml": "maps/normal/normal_hospital_navigation.yaml",
+    "reference_pgm": "normal_hospital_navigation.pgm",
+    "reference_pgm_sha256": "b59439efb90b354a0be824bfba3e3f7eaecb876e0a8253d6a7b0306770414b7c",
+    "occupancy_ros_order_sha256": "c0a8770dc5822958ad69f044de272e888944da52d092fee25405194aeeb1479b"
+  },
+  "coordinate_convention": "polygon_pixel uses original PGM pixel-edge coordinates, top-left origin, x right y down; world=(ox+u*r, oy+(height-v)*r) rotated by map yaw; cell centers add 0.5",
+  "zone_count": 27,
+  "room_count": 20,
+  "nonroom_count": 7,
+  "zones": [
+    {
+      "id": "R01",
+      "kind": "room",
+      "color": "#E85E62",
+      "label": "R01",
+      "label_pixel": [
+        136,
+        80
+      ],
+      "polygon_pixel": [
+        [
+          83,
+          8
+        ],
+        [
+          184,
+          6
+        ],
+        [
+          184,
+          137
+        ],
+        [
+          83,
+          138
+        ]
+      ],
+      "mask_id": 1,
+      "polygon_map_m": [
+        [
+          3.589,
+          11.05
+        ],
+        [
+          8.639,
+          11.15
+        ],
+        [
+          8.639,
+          4.6
+        ],
+        [
+          3.589,
+          4.55
+        ]
+      ],
+      "label_map_m": [
+        6.239,
+        7.45
+      ],
+      "review_status": "aligned_to_original_grid_pending_rviz_review",
+      "known_free_cells": 12360,
+      "known_free_area_m2": 30.9
+    },
+    {
+      "id": "R02A",
+      "kind": "room",
+      "color": "#D5A700",
+      "label": "R02A",
+      "label_pixel": [
+        222,
+        44
+      ],
+      "polygon_pixel": [
+        [
+          184,
+          6
+        ],
+        [
+          264,
+          6
+        ],
+        [
+          264,
+          77
+        ],
+        [
+          184,
+          77
+        ]
+      ],
+      "mask_id": 2,
+      "polygon_map_m": [
+        [
+          8.639,
+          11.15
+        ],
+        [
+          12.639,
+          11.15
+        ],
+        [
+          12.639,
+          7.6
+        ],
+        [
+          8.639,
+          7.6
+        ]
+      ],
+      "label_map_m": [
+        10.539,
+        9.25
+      ],
+      "review_status": "aligned_to_original_grid_pending_rviz_review",
+      "known_free_cells": 5057,
+      "known_free_area_m2": 12.6425
+    },
+    {
+      "id": "R02B",
+      "kind": "room",
+      "color": "#D5A700",
+      "label": "R02B",
+      "label_pixel": [
+        303,
+        44
+      ],
+      "polygon_pixel": [
+        [
+          264,
+          6
+        ],
+        [
+          342,
+          6
+        ],
+        [
+          342,
+          77
+        ],
+        [
+          264,
+          77
+        ]
+      ],
+      "mask_id": 3,
+      "polygon_map_m": [
+        [
+          12.639,
+          11.15
+        ],
+        [
+          16.539,
+          11.15
+        ],
+        [
+          16.539,
+          7.6
+        ],
+        [
+          12.639,
+          7.6
+        ]
+      ],
+      "label_map_m": [
+        14.589,
+        9.25
+      ],
+      "review_status": "aligned_to_original_grid_pending_rviz_review",
+      "known_free_cells": 4991,
+      "known_free_area_m2": 12.4775
+    },
+    {
+      "id": "R03",
+      "kind": "room",
+      "color": "#38965A",
+      "label": "R03",
+      "label_pixel": [
+        478,
+        61
+      ],
+      "polygon_pixel": [
+        [
+          342,
+          6
+        ],
+        [
+          619,
+          2
+        ],
+        [
+          619,
+          122
+        ],
+        [
+          601,
+          122
+        ],
+        [
+          342,
+          126
+        ]
+      ],
+      "mask_id": 4,
+      "polygon_map_m": [
+        [
+          16.539,
+          11.15
+        ],
+        [
+          30.389,
+          11.35
+        ],
+        [
+          30.389,
+          5.35
+        ],
+        [
+          29.489,
+          5.35
+        ],
+        [
+          16.539,
+          5.15
+        ]
+      ],
+      "label_map_m": [
+        23.339,
+        8.4
+      ],
+      "review_status": "aligned_to_original_grid_pending_rviz_review",
+      "known_free_cells": 31080,
+      "known_free_area_m2": 77.7
+    },
+    {
+      "id": "R04",
+      "kind": "room",
+      "color": "#9161C8",
+      "label": "R04",
+      "label_pixel": [
+        767,
+        58
+      ],
+      "polygon_pixel": [
+        [
+          619,
+          2
+        ],
+        [
+          901,
+          0
+        ],
+        [
+          901,
+          120
+        ],
+        [
+          619,
+          123
+        ]
+      ],
+      "mask_id": 5,
+      "polygon_map_m": [
+        [
+          30.389,
+          11.35
+        ],
+        [
+          44.489,
+          11.45
+        ],
+        [
+          44.489,
+          5.45
+        ],
+        [
+          30.389,
+          5.3
+        ]
+      ],
+      "label_map_m": [
+        37.789,
+        8.55
+      ],
+      "review_status": "aligned_to_original_grid_pending_rviz_review",
+      "known_free_cells": 28708,
+      "known_free_area_m2": 71.77
+    },
+    {
+      "id": "R05",
+      "kind": "room",
+      "color": "#D34C92",
+      "label": "R05",
+      "label_pixel": [
+        1006,
+        85
+      ],
+      "polygon_pixel": [
+        [
+          901,
+          0
+        ],
+        [
+          1064,
+          0
+        ],
+        [
+          1064,
+          320
+        ],
+        [
+          943,
+          320
+        ],
+        [
+          943,
+          121
+        ],
+        [
+          901,
+          121
+        ]
+      ],
+      "mask_id": 6,
+      "polygon_map_m": [
+        [
+          44.489,
+          11.45
+        ],
+        [
+          52.639,
+          11.45
+        ],
+        [
+          52.639,
+          -4.55
+        ],
+        [
+          46.589,
+          -4.55
+        ],
+        [
+          46.589,
+          5.4
+        ],
+        [
+          44.489,
+          5.4
+        ]
+      ],
+      "label_map_m": [
+        49.739,
+        7.2
+      ],
+      "review_status": "aligned_to_original_grid_pending_rviz_review",
+      "known_free_cells": 41073,
+      "known_free_area_m2": 102.6825
+    },
+    {
+      "id": "R06A",
+      "kind": "room",
+      "color": "#DD9026",
+      "label": "R06A",
+      "label_pixel": [
+        496,
+        229
+      ],
+      "polygon_pixel": [
+        [
+          424,
+          185
+        ],
+        [
+          462,
+          184
+        ],
+        [
+          462,
+          204
+        ],
+        [
+          526,
+          204
+        ],
+        [
+          526,
+          183
+        ],
+        [
+          563,
+          182
+        ],
+        [
+          565,
+          254
+        ],
+        [
+          424,
+          254
+        ]
+      ],
+      "mask_id": 7,
+      "polygon_map_m": [
+        [
+          20.639,
+          2.2
+        ],
+        [
+          22.539,
+          2.25
+        ],
+        [
+          22.539,
+          1.25
+        ],
+        [
+          25.739,
+          1.25
+        ],
+        [
+          25.739,
+          2.3
+        ],
+        [
+          27.589,
+          2.35
+        ],
+        [
+          27.689,
+          -1.25
+        ],
+        [
+          20.639,
+          -1.25
+        ]
+      ],
+      "label_map_m": [
+        24.239,
+        0.0
+      ],
+      "review_status": "aligned_to_original_grid_pending_rviz_review",
+      "known_free_cells": 7503,
+      "known_free_area_m2": 18.7575
+    },
+    {
+      "id": "R06B",
+      "kind": "room",
+      "color": "#DD9026",
+      "label": "R06B",
+      "label_pixel": [
+        496,
+        280
+      ],
+      "polygon_pixel": [
+        [
+          424,
+          254
+        ],
+        [
+          565,
+          254
+        ],
+        [
+          565,
+          323
+        ],
+        [
+          526,
+          323
+        ],
+        [
+          526,
+          303
+        ],
+        [
+          465,
+          303
+        ],
+        [
+          465,
+          324
+        ],
+        [
+          424,
+          324
+        ]
+      ],
+      "mask_id": 8,
+      "polygon_map_m": [
+        [
+          20.639,
+          -1.25
+        ],
+        [
+          27.689,
+          -1.25
+        ],
+        [
+          27.689,
+          -4.7
+        ],
+        [
+          25.739,
+          -4.7
+        ],
+        [
+          25.739,
+          -3.7
+        ],
+        [
+          22.689,
+          -3.7
+        ],
+        [
+          22.689,
+          -4.75
+        ],
+        [
+          20.639,
+          -4.75
+        ]
+      ],
+      "label_map_m": [
+        24.239,
+        -2.55
+      ],
+      "review_status": "aligned_to_original_grid_pending_rviz_review",
+      "known_free_cells": 7567,
+      "known_free_area_m2": 18.9175
+    },
+    {
+      "id": "R07A",
+      "kind": "room",
+      "color": "#D9658C",
+      "label": "R07A",
+      "label_pixel": [
+        653,
+        220
+      ],
+      "polygon_pixel": [
+        [
+          623,
+          183
+        ],
+        [
+          683,
+          181
+        ],
+        [
+          684,
+          250
+        ],
+        [
+          623,
+          250
+        ]
+      ],
+      "mask_id": 9,
+      "polygon_map_m": [
+        [
+          30.589,
+          2.3
+        ],
+        [
+          33.589,
+          2.4
+        ],
+        [
+          33.639,
+          -1.05
+        ],
+        [
+          30.589,
+          -1.05
+        ]
+      ],
+      "label_map_m": [
+        32.089,
+        0.45
+      ],
+      "review_status": "aligned_to_original_grid_pending_rviz_review",
+      "known_free_cells": 3439,
+      "known_free_area_m2": 8.5975
+    },
+    {
+      "id": "R07B",
+      "kind": "room",
+      "color": "#D9658C",
+      "label": "R07B",
+      "label_pixel": [
+        653,
+        280
+      ],
+      "polygon_pixel": [
+        [
+          623,
+          250
+        ],
+        [
+          684,
+          250
+        ],
+        [
+          684,
+          319
+        ],
+        [
+          623,
+          320
+        ]
+      ],
+      "mask_id": 10,
+      "polygon_map_m": [
+        [
+          30.589,
+          -1.05
+        ],
+        [
+          33.639,
+          -1.05
+        ],
+        [
+          33.639,
+          -4.5
+        ],
+        [
+          30.589,
+          -4.55
+        ]
+      ],
+      "label_map_m": [
+        32.089,
+        -2.55
+      ],
+      "review_status": "aligned_to_original_grid_pending_rviz_review",
+      "known_free_cells": 3527,
+      "known_free_area_m2": 8.8175
+    },
+    {
+      "id": "R08A",
+      "kind": "room",
+      "color": "#499EC4",
+      "label": "R08A",
+      "label_pixel": [
+        812,
+        217
+      ],
+      "polygon_pixel": [
+        [
+          742,
+          183
+        ],
+        [
+          882,
+          180
+        ],
+        [
+          884,
+          251
+        ],
+        [
+          742,
+          251
+        ]
+      ],
+      "mask_id": 11,
+      "polygon_map_m": [
+        [
+          36.539,
+          2.3
+        ],
+        [
+          43.539,
+          2.45
+        ],
+        [
+          43.639,
+          -1.1
+        ],
+        [
+          36.539,
+          -1.1
+        ]
+      ],
+      "label_map_m": [
+        40.039,
+        0.6
+      ],
+      "review_status": "aligned_to_original_grid_pending_rviz_review",
+      "known_free_cells": 8572,
+      "known_free_area_m2": 21.43
+    },
+    {
+      "id": "R08B",
+      "kind": "room",
+      "color": "#499EC4",
+      "label": "R08B",
+      "label_pixel": [
+        812,
+        282
+      ],
+      "polygon_pixel": [
+        [
+          742,
+          251
+        ],
+        [
+          884,
+          251
+        ],
+        [
+          884,
+          323
+        ],
+        [
+          744,
+          323
+        ]
+      ],
+      "mask_id": 12,
+      "polygon_map_m": [
+        [
+          36.539,
+          -1.1
+        ],
+        [
+          43.639,
+          -1.1
+        ],
+        [
+          43.639,
+          -4.7
+        ],
+        [
+          36.639,
+          -4.7
+        ]
+      ],
+      "label_map_m": [
+        40.039,
+        -2.65
+      ],
+      "review_status": "aligned_to_original_grid_pending_rviz_review",
+      "known_free_cells": 9217,
+      "known_free_area_m2": 23.0425
+    },
+    {
+      "id": "R09",
+      "kind": "room",
+      "color": "#A16ED0",
+      "label": "R09",
+      "label_pixel": [
+        135,
+        463
+      ],
+      "polygon_pixel": [
+        [
+          85,
+          375
+        ],
+        [
+          185,
+          375
+        ],
+        [
+          185,
+          505
+        ],
+        [
+          85,
+          505
+        ]
+      ],
+      "mask_id": 13,
+      "polygon_map_m": [
+        [
+          3.689,
+          -7.3
+        ],
+        [
+          8.689,
+          -7.3
+        ],
+        [
+          8.689,
+          -13.8
+        ],
+        [
+          3.689,
+          -13.8
+        ]
+      ],
+      "label_map_m": [
+        6.189,
+        -11.7
+      ],
+      "review_status": "aligned_to_original_grid_pending_rviz_review",
+      "known_free_cells": 12256,
+      "known_free_area_m2": 30.64
+    },
+    {
+      "id": "R10A",
+      "kind": "room",
+      "color": "#D5A700",
+      "label": "R10A",
+      "label_pixel": [
+        225,
+        476
+      ],
+      "polygon_pixel": [
+        [
+          185,
+          435
+        ],
+        [
+          266,
+          435
+        ],
+        [
+          266,
+          505
+        ],
+        [
+          185,
+          505
+        ]
+      ],
+      "mask_id": 14,
+      "polygon_map_m": [
+        [
+          8.689,
+          -10.3
+        ],
+        [
+          12.739,
+          -10.3
+        ],
+        [
+          12.739,
+          -13.8
+        ],
+        [
+          8.689,
+          -13.8
+        ]
+      ],
+      "label_map_m": [
+        10.689,
+        -12.35
+      ],
+      "review_status": "aligned_to_original_grid_pending_rviz_review",
+      "known_free_cells": 4950,
+      "known_free_area_m2": 12.375
+    },
+    {
+      "id": "R10B",
+      "kind": "room",
+      "color": "#D5A700",
+      "label": "R10B",
+      "label_pixel": [
+        306,
+        476
+      ],
+      "polygon_pixel": [
+        [
+          266,
+          435
+        ],
+        [
+          345,
+          434
+        ],
+        [
+          345,
+          504
+        ],
+        [
+          266,
+          505
+        ]
+      ],
+      "mask_id": 15,
+      "polygon_map_m": [
+        [
+          12.739,
+          -10.3
+        ],
+        [
+          16.689,
+          -10.25
+        ],
+        [
+          16.689,
+          -13.75
+        ],
+        [
+          12.739,
+          -13.8
+        ]
+      ],
+      "label_map_m": [
+        14.739,
+        -12.35
+      ],
+      "review_status": "aligned_to_original_grid_pending_rviz_review",
+      "known_free_cells": 4960,
+      "known_free_area_m2": 12.4
+    },
+    {
+      "id": "R11",
+      "kind": "room",
+      "color": "#D86D96",
+      "label": "R11",
+      "label_pixel": [
+        484,
+        461
+      ],
+      "polygon_pixel": [
+        [
+          345,
+          384
+        ],
+        [
+          526,
+          382
+        ],
+        [
+          604,
+          381
+        ],
+        [
+          624,
+          381
+        ],
+        [
+          624,
+          503
+        ],
+        [
+          345,
+          504
+        ]
+      ],
+      "mask_id": 16,
+      "polygon_map_m": [
+        [
+          16.689,
+          -7.75
+        ],
+        [
+          25.739,
+          -7.65
+        ],
+        [
+          29.639,
+          -7.6
+        ],
+        [
+          30.639,
+          -7.6
+        ],
+        [
+          30.639,
+          -13.7
+        ],
+        [
+          16.689,
+          -13.75
+        ]
+      ],
+      "label_map_m": [
+        23.639,
+        -11.6
+      ],
+      "review_status": "aligned_to_original_grid_pending_rviz_review",
+      "known_free_cells": 29424,
+      "known_free_area_m2": 73.56
+    },
+    {
+      "id": "R12",
+      "kind": "room",
+      "color": "#54A765",
+      "label": "R12",
+      "label_pixel": [
+        759,
+        462
+      ],
+      "polygon_pixel": [
+        [
+          624,
+          381
+        ],
+        [
+          905,
+          379
+        ],
+        [
+          905,
+          501
+        ],
+        [
+          624,
+          503
+        ]
+      ],
+      "mask_id": 17,
+      "polygon_map_m": [
+        [
+          30.639,
+          -7.6
+        ],
+        [
+          44.689,
+          -7.5
+        ],
+        [
+          44.689,
+          -13.6
+        ],
+        [
+          30.639,
+          -13.7
+        ]
+      ],
+      "label_map_m": [
+        37.389,
+        -11.65
+      ],
+      "review_status": "aligned_to_original_grid_pending_rviz_review",
+      "known_free_cells": 30016,
+      "known_free_area_m2": 75.04
+    },
+    {
+      "id": "R13",
+      "kind": "room",
+      "color": "#DF8D42",
+      "label": "R13",
+      "label_pixel": [
+        996,
+        453
+      ],
+      "polygon_pixel": [
+        [
+          905,
+          379
+        ],
+        [
+          1064,
+          379
+        ],
+        [
+          1064,
+          498
+        ],
+        [
+          970,
+          498
+        ],
+        [
+          970,
+          487
+        ],
+        [
+          918,
+          487
+        ],
+        [
+          918,
+          447
+        ],
+        [
+          921,
+          447
+        ],
+        [
+          921,
+          425
+        ],
+        [
+          905,
+          425
+        ]
+      ],
+      "mask_id": 18,
+      "polygon_map_m": [
+        [
+          44.689,
+          -7.5
+        ],
+        [
+          52.639,
+          -7.5
+        ],
+        [
+          52.639,
+          -13.45
+        ],
+        [
+          47.939,
+          -13.45
+        ],
+        [
+          47.939,
+          -12.9
+        ],
+        [
+          45.339,
+          -12.9
+        ],
+        [
+          45.339,
+          -10.9
+        ],
+        [
+          45.489,
+          -10.9
+        ],
+        [
+          45.489,
+          -9.8
+        ],
+        [
+          44.689,
+          -9.8
+        ]
+      ],
+      "label_map_m": [
+        49.239,
+        -11.2
+      ],
+      "review_status": "aligned_to_original_grid_pending_rviz_review",
+      "known_free_cells": 16278,
+      "known_free_area_m2": 40.695
+    },
+    {
+      "id": "R14_T",
+      "kind": "room",
+      "color": "#CD7378",
+      "label": "R14-T",
+      "label_pixel": [
+        70,
+        170
+      ],
+      "polygon_pixel": [
+        [
+          3,
+          128
+        ],
+        [
+          42,
+          128
+        ],
+        [
+          42,
+          8
+        ],
+        [
+          83,
+          8
+        ],
+        [
+          83,
+          138
+        ],
+        [
+          125,
+          138
+        ],
+        [
+          125,
+          197
+        ],
+        [
+          3,
+          197
+        ]
+      ],
+      "mask_id": 19,
+      "polygon_map_m": [
+        [
+          -0.411,
+          5.05
+        ],
+        [
+          1.539,
+          5.05
+        ],
+        [
+          1.539,
+          11.05
+        ],
+        [
+          3.589,
+          11.05
+        ],
+        [
+          3.589,
+          4.55
+        ],
+        [
+          5.689,
+          4.55
+        ],
+        [
+          5.689,
+          1.6
+        ],
+        [
+          -0.411,
+          1.6
+        ]
+      ],
+      "label_map_m": [
+        2.939,
+        2.95
+      ],
+      "review_status": "aligned_to_original_grid_pending_rviz_review",
+      "known_free_cells": 11798,
+      "known_free_area_m2": 29.495
+    },
+    {
+      "id": "R15_T",
+      "kind": "room",
+      "color": "#9E6FC4",
+      "label": "R15-T",
+      "label_pixel": [
+        67,
+        350
+      ],
+      "polygon_pixel": [
+        [
+          5,
+          317
+        ],
+        [
+          126,
+          317
+        ],
+        [
+          126,
+          375
+        ],
+        [
+          85,
+          375
+        ],
+        [
+          85,
+          505
+        ],
+        [
+          46,
+          505
+        ],
+        [
+          46,
+          385
+        ],
+        [
+          5,
+          385
+        ]
+      ],
+      "mask_id": 20,
+      "polygon_map_m": [
+        [
+          -0.311,
+          -4.4
+        ],
+        [
+          5.739,
+          -4.4
+        ],
+        [
+          5.739,
+          -7.3
+        ],
+        [
+          3.689,
+          -7.3
+        ],
+        [
+          3.689,
+          -13.8
+        ],
+        [
+          1.739,
+          -13.8
+        ],
+        [
+          1.739,
+          -7.8
+        ],
+        [
+          -0.311,
+          -7.8
+        ]
+      ],
+      "label_map_m": [
+        2.789,
+        -6.05
+      ],
+      "review_status": "aligned_to_original_grid_pending_rviz_review",
+      "known_free_cells": 11774,
+      "known_free_area_m2": 29.435
+    },
+    {
+      "id": "LOBBY",
+      "kind": "lobby",
+      "color": "#14A8A9",
+      "label": "로비 / 허브",
+      "label_pixel": [
+        235,
+        266
+      ],
+      "polygon_pixel": [
+        [
+          37,
+          197
+        ],
+        [
+          125,
+          197
+        ],
+        [
+          125,
+          138
+        ],
+        [
+          184,
+          138
+        ],
+        [
+          184,
+          77
+        ],
+        [
+          342,
+          77
+        ],
+        [
+          342,
+          126
+        ],
+        [
+          526,
+          123.4
+        ],
+        [
+          526,
+          204
+        ],
+        [
+          462,
+          204
+        ],
+        [
+          462,
+          184
+        ],
+        [
+          424,
+          185
+        ],
+        [
+          424,
+          324
+        ],
+        [
+          465,
+          324
+        ],
+        [
+          465,
+          303
+        ],
+        [
+          526,
+          303
+        ],
+        [
+          526,
+          382
+        ],
+        [
+          345,
+          384
+        ],
+        [
+          345,
+          434
+        ],
+        [
+          266,
+          435
+        ],
+        [
+          185,
+          435
+        ],
+        [
+          185,
+          375
+        ],
+        [
+          126,
+          375
+        ],
+        [
+          126,
+          317
+        ],
+        [
+          37,
+          317
+        ]
+      ],
+      "mask_id": 21,
+      "polygon_map_m": [
+        [
+          1.289,
+          1.6
+        ],
+        [
+          5.689,
+          1.6
+        ],
+        [
+          5.689,
+          4.55
+        ],
+        [
+          8.639,
+          4.55
+        ],
+        [
+          8.639,
+          7.6
+        ],
+        [
+          16.539,
+          7.6
+        ],
+        [
+          16.539,
+          5.15
+        ],
+        [
+          25.739,
+          5.28
+        ],
+        [
+          25.739,
+          1.25
+        ],
+        [
+          22.539,
+          1.25
+        ],
+        [
+          22.539,
+          2.25
+        ],
+        [
+          20.639,
+          2.2
+        ],
+        [
+          20.639,
+          -4.75
+        ],
+        [
+          22.689,
+          -4.75
+        ],
+        [
+          22.689,
+          -3.7
+        ],
+        [
+          25.739,
+          -3.7
+        ],
+        [
+          25.739,
+          -7.65
+        ],
+        [
+          16.689,
+          -7.75
+        ],
+        [
+          16.689,
+          -10.25
+        ],
+        [
+          12.739,
+          -10.3
+        ],
+        [
+          8.689,
+          -10.3
+        ],
+        [
+          8.689,
+          -7.3
+        ],
+        [
+          5.739,
+          -7.3
+        ],
+        [
+          5.739,
+          -4.4
+        ],
+        [
+          1.289,
+          -4.4
+        ]
+      ],
+      "label_map_m": [
+        11.189,
+        -1.85
+      ],
+      "review_status": "aligned_to_original_grid_pending_rviz_review",
+      "known_free_cells": 111000,
+      "known_free_area_m2": 277.5
+    },
+    {
+      "id": "CORRIDOR_B",
+      "kind": "corridor",
+      "color": "#327DF1",
+      "label": "복도 B",
+      "label_pixel": [
+        724,
+        151
+      ],
+      "polygon_pixel": [
+        [
+          526,
+          123.4
+        ],
+        [
+          601,
+          122
+        ],
+        [
+          619,
+          122
+        ],
+        [
+          619,
+          123
+        ],
+        [
+          901,
+          120
+        ],
+        [
+          901,
+          121
+        ],
+        [
+          943,
+          121
+        ],
+        [
+          943,
+          180
+        ],
+        [
+          882,
+          180
+        ],
+        [
+          742,
+          183
+        ],
+        [
+          683,
+          181
+        ],
+        [
+          623,
+          183
+        ],
+        [
+          563,
+          182
+        ],
+        [
+          526,
+          183
+        ]
+      ],
+      "mask_id": 22,
+      "polygon_map_m": [
+        [
+          25.739,
+          5.28
+        ],
+        [
+          29.489,
+          5.35
+        ],
+        [
+          30.389,
+          5.35
+        ],
+        [
+          30.389,
+          5.3
+        ],
+        [
+          44.489,
+          5.45
+        ],
+        [
+          44.489,
+          5.4
+        ],
+        [
+          46.589,
+          5.4
+        ],
+        [
+          46.589,
+          2.45
+        ],
+        [
+          43.539,
+          2.45
+        ],
+        [
+          36.539,
+          2.3
+        ],
+        [
+          33.589,
+          2.4
+        ],
+        [
+          30.589,
+          2.3
+        ],
+        [
+          27.589,
+          2.35
+        ],
+        [
+          25.739,
+          2.3
+        ]
+      ],
+      "label_map_m": [
+        35.639,
+        3.9
+      ],
+      "review_status": "aligned_to_original_grid_pending_rviz_review",
+      "known_free_cells": 23911,
+      "known_free_area_m2": 59.7775
+    },
+    {
+      "id": "CONNECTOR_1",
+      "kind": "corridor",
+      "color": "#327DF1",
+      "label": "연결 1",
+      "label_pixel": [
+        595,
+        270
+      ],
+      "polygon_pixel": [
+        [
+          563,
+          182
+        ],
+        [
+          623,
+          183
+        ],
+        [
+          623,
+          320
+        ],
+        [
+          565,
+          323
+        ],
+        [
+          565,
+          254
+        ]
+      ],
+      "mask_id": 23,
+      "polygon_map_m": [
+        [
+          27.589,
+          2.35
+        ],
+        [
+          30.589,
+          2.3
+        ],
+        [
+          30.589,
+          -4.55
+        ],
+        [
+          27.689,
+          -4.7
+        ],
+        [
+          27.689,
+          -1.25
+        ]
+      ],
+      "label_map_m": [
+        29.189,
+        -2.05
+      ],
+      "review_status": "aligned_to_original_grid_pending_rviz_review",
+      "known_free_cells": 7866,
+      "known_free_area_m2": 19.665
+    },
+    {
+      "id": "CONNECTOR_2",
+      "kind": "corridor",
+      "color": "#327DF1",
+      "label": "연결 2",
+      "label_pixel": [
+        713,
+        270
+      ],
+      "polygon_pixel": [
+        [
+          683,
+          181
+        ],
+        [
+          742,
+          183
+        ],
+        [
+          742,
+          251
+        ],
+        [
+          744,
+          323
+        ],
+        [
+          684,
+          319
+        ],
+        [
+          684,
+          250
+        ]
+      ],
+      "mask_id": 24,
+      "polygon_map_m": [
+        [
+          33.589,
+          2.4
+        ],
+        [
+          36.539,
+          2.3
+        ],
+        [
+          36.539,
+          -1.1
+        ],
+        [
+          36.639,
+          -4.7
+        ],
+        [
+          33.639,
+          -4.5
+        ],
+        [
+          33.639,
+          -1.05
+        ]
+      ],
+      "label_map_m": [
+        35.089,
+        -2.05
+      ],
+      "review_status": "aligned_to_original_grid_pending_rviz_review",
+      "known_free_cells": 7865,
+      "known_free_area_m2": 19.6625
+    },
+    {
+      "id": "CORRIDOR_C",
+      "kind": "corridor",
+      "color": "#327DF1",
+      "label": "복도 C",
+      "label_pixel": [
+        913,
+        263
+      ],
+      "polygon_pixel": [
+        [
+          882,
+          180
+        ],
+        [
+          943,
+          180
+        ],
+        [
+          943,
+          320
+        ],
+        [
+          884,
+          323
+        ],
+        [
+          884,
+          251
+        ]
+      ],
+      "mask_id": 25,
+      "polygon_map_m": [
+        [
+          43.539,
+          2.45
+        ],
+        [
+          46.589,
+          2.45
+        ],
+        [
+          46.589,
+          -4.55
+        ],
+        [
+          43.639,
+          -4.7
+        ],
+        [
+          43.639,
+          -1.1
+        ]
+      ],
+      "label_map_m": [
+        45.089,
+        -1.7
+      ],
+      "review_status": "aligned_to_original_grid_pending_rviz_review",
+      "known_free_cells": 7976,
+      "known_free_area_m2": 19.94
+    },
+    {
+      "id": "CORRIDOR_D",
+      "kind": "corridor",
+      "color": "#327DF1",
+      "label": "복도 D",
+      "label_pixel": [
+        755,
+        351
+      ],
+      "polygon_pixel": [
+        [
+          526,
+          323
+        ],
+        [
+          565,
+          323
+        ],
+        [
+          623,
+          320
+        ],
+        [
+          684,
+          319
+        ],
+        [
+          744,
+          323
+        ],
+        [
+          884,
+          323
+        ],
+        [
+          943,
+          320
+        ],
+        [
+          1064,
+          320
+        ],
+        [
+          1064,
+          379
+        ],
+        [
+          907,
+          379
+        ],
+        [
+          905,
+          379
+        ],
+        [
+          624,
+          381
+        ],
+        [
+          604,
+          381
+        ],
+        [
+          526,
+          382
+        ]
+      ],
+      "mask_id": 26,
+      "polygon_map_m": [
+        [
+          25.739,
+          -4.7
+        ],
+        [
+          27.689,
+          -4.7
+        ],
+        [
+          30.589,
+          -4.55
+        ],
+        [
+          33.639,
+          -4.5
+        ],
+        [
+          36.639,
+          -4.7
+        ],
+        [
+          43.639,
+          -4.7
+        ],
+        [
+          46.589,
+          -4.55
+        ],
+        [
+          52.639,
+          -4.55
+        ],
+        [
+          52.639,
+          -7.5
+        ],
+        [
+          44.789,
+          -7.5
+        ],
+        [
+          44.689,
+          -7.5
+        ],
+        [
+          30.639,
+          -7.6
+        ],
+        [
+          29.639,
+          -7.6
+        ],
+        [
+          25.739,
+          -7.65
+        ]
+      ],
+      "label_map_m": [
+        37.189,
+        -6.1
+      ],
+      "review_status": "aligned_to_original_grid_pending_rviz_review",
+      "known_free_cells": 30785,
+      "known_free_area_m2": 76.9625
+    },
+    {
+      "id": "CORRIDOR_E",
+      "kind": "corridor",
+      "color": "#327DF1",
+      "label": "복도 E",
+      "label_pixel": [
+        1094,
+        266
+      ],
+      "polygon_pixel": [
+        [
+          1064,
+          0
+        ],
+        [
+          1126,
+          0
+        ],
+        [
+          1126,
+          498
+        ],
+        [
+          1064,
+          498
+        ]
+      ],
+      "mask_id": 27,
+      "polygon_map_m": [
+        [
+          52.639,
+          11.45
+        ],
+        [
+          55.739,
+          11.45
+        ],
+        [
+          55.739,
+          -13.45
+        ],
+        [
+          52.639,
+          -13.45
+        ]
+      ],
+      "label_map_m": [
+        54.139,
+        -1.85
+      ],
+      "review_status": "aligned_to_original_grid_pending_rviz_review",
+      "known_free_cells": 28408,
+      "known_free_area_m2": 71.02
+    }
+  ],
+  "doors": [
+    {
+      "id": "D01",
+      "pixel_edge": [
+        199.8517,
+        77.4534
+      ],
+      "map_xy_m": [
+        9.431587,
+        7.577328
+      ],
+      "source": "user_red_dot_on_original_jpeg",
+      "status": "approximate_marker_only_not_navigation_waypoint"
+    },
+    {
+      "id": "D02",
+      "pixel_edge": [
+        326.3457,
+        76.1455
+      ],
+      "map_xy_m": [
+        15.756287,
+        7.642724
+      ],
+      "source": "user_red_dot_on_original_jpeg",
+      "status": "approximate_marker_only_not_navigation_waypoint"
+    },
+    {
+      "id": "D03",
+      "pixel_edge": [
+        183.8492,
+        123.179
+      ],
+      "map_xy_m": [
+        8.631461,
+        5.291052
+      ],
+      "source": "user_red_dot_on_original_jpeg",
+      "status": "approximate_marker_only_not_navigation_waypoint"
+    },
+    {
+      "id": "D04",
+      "pixel_edge": [
+        429.6027,
+        109.8353
+      ],
+      "map_xy_m": [
+        20.919136,
+        5.958235
+      ],
+      "source": "user_red_dot_on_original_jpeg",
+      "status": "approximate_marker_only_not_navigation_waypoint"
+    },
+    {
+      "id": "D05",
+      "pixel_edge": [
+        601.8958,
+        123.1422
+      ],
+      "map_xy_m": [
+        29.533789,
+        5.292889
+      ],
+      "source": "user_red_dot_on_original_jpeg",
+      "status": "approximate_marker_only_not_navigation_waypoint"
+    },
+    {
+      "id": "D06",
+      "pixel_edge": [
+        710.098,
+        108.2041
+      ],
+      "map_xy_m": [
+        34.943902,
+        6.039796
+      ],
+      "source": "user_red_dot_on_original_jpeg",
+      "status": "approximate_marker_only_not_navigation_waypoint"
+    },
+    {
+      "id": "D07",
+      "pixel_edge": [
+        884.0567,
+        120.0635
+      ],
+      "map_xy_m": [
+        43.641833,
+        5.446826
+      ],
+      "source": "user_red_dot_on_original_jpeg",
+      "status": "approximate_marker_only_not_navigation_waypoint"
+    },
+    {
+      "id": "D08",
+      "pixel_edge": [
+        124.4763,
+        153.4961
+      ],
+      "map_xy_m": [
+        5.662813,
+        3.775196
+      ],
+      "source": "user_red_dot_on_original_jpeg",
+      "status": "approximate_marker_only_not_navigation_waypoint"
+    },
+    {
+      "id": "D09",
+      "pixel_edge": [
+        943.9799,
+        143.4296
+      ],
+      "map_xy_m": [
+        46.637995,
+        4.278522
+      ],
+      "source": "user_red_dot_on_original_jpeg",
+      "status": "approximate_marker_only_not_navigation_waypoint"
+    },
+    {
+      "id": "D10",
+      "pixel_edge": [
+        424.7968,
+        199.5449
+      ],
+      "map_xy_m": [
+        20.678841,
+        1.472754
+      ],
+      "source": "user_red_dot_on_original_jpeg",
+      "status": "approximate_marker_only_not_navigation_waypoint"
+    },
+    {
+      "id": "D11",
+      "pixel_edge": [
+        622.5795,
+        197.6418
+      ],
+      "map_xy_m": [
+        30.567973,
+        1.567909
+      ],
+      "source": "user_red_dot_on_original_jpeg",
+      "status": "approximate_marker_only_not_navigation_waypoint"
+    },
+    {
+      "id": "D12",
+      "pixel_edge": [
+        742.4333,
+        198.2958
+      ],
+      "map_xy_m": [
+        36.560663,
+        1.535211
+      ],
+      "source": "user_red_dot_on_original_jpeg",
+      "status": "approximate_marker_only_not_navigation_waypoint"
+    },
+    {
+      "id": "D13",
+      "pixel_edge": [
+        622.5868,
+        305.2581
+      ],
+      "map_xy_m": [
+        30.56834,
+        -3.812904
+      ],
+      "source": "user_red_dot_on_original_jpeg",
+      "status": "approximate_marker_only_not_navigation_waypoint"
+    },
+    {
+      "id": "D14",
+      "pixel_edge": [
+        742.0444,
+        308.0576
+      ],
+      "map_xy_m": [
+        36.541219,
+        -3.95288
+      ],
+      "source": "user_red_dot_on_original_jpeg",
+      "status": "approximate_marker_only_not_navigation_waypoint"
+    },
+    {
+      "id": "D15",
+      "pixel_edge": [
+        1063.0266,
+        298.476
+      ],
+      "map_xy_m": [
+        52.59033,
+        -3.473802
+      ],
+      "source": "user_red_dot_on_original_jpeg",
+      "status": "approximate_marker_only_not_navigation_waypoint"
+    },
+    {
+      "id": "D16",
+      "pixel_edge": [
+        422.1848,
+        310.5779
+      ],
+      "map_xy_m": [
+        20.548238,
+        -4.078896
+      ],
+      "source": "user_red_dot_on_original_jpeg",
+      "status": "approximate_marker_only_not_navigation_waypoint"
+    },
+    {
+      "id": "D17",
+      "pixel_edge": [
+        125.7309,
+        358.1918
+      ],
+      "map_xy_m": [
+        5.725547,
+        -6.459591
+      ],
+      "source": "user_red_dot_on_original_jpeg",
+      "status": "approximate_marker_only_not_navigation_waypoint"
+    },
+    {
+      "id": "D18",
+      "pixel_edge": [
+        185.7275,
+        391.1762
+      ],
+      "map_xy_m": [
+        8.725377,
+        -8.108811
+      ],
+      "source": "user_red_dot_on_original_jpeg",
+      "status": "approximate_marker_only_not_navigation_waypoint"
+    },
+    {
+      "id": "D19",
+      "pixel_edge": [
+        604.6619,
+        382.6087
+      ],
+      "map_xy_m": [
+        29.672096,
+        -7.680433
+      ],
+      "source": "user_red_dot_on_original_jpeg",
+      "status": "approximate_marker_only_not_navigation_waypoint"
+    },
+    {
+      "id": "D20",
+      "pixel_edge": [
+        885.5608,
+        382.4837
+      ],
+      "map_xy_m": [
+        43.71704,
+        -7.674187
+      ],
+      "source": "user_red_dot_on_original_jpeg",
+      "status": "approximate_marker_only_not_navigation_waypoint"
+    },
+    {
+      "id": "D21",
+      "pixel_edge": [
+        924.4408,
+        382.1384
+      ],
+      "map_xy_m": [
+        45.661041,
+        -7.65692
+      ],
+      "source": "user_red_dot_on_original_jpeg",
+      "status": "approximate_marker_only_not_navigation_waypoint"
+    },
+    {
+      "id": "D22",
+      "pixel_edge": [
+        434.3132,
+        398.3697
+      ],
+      "map_xy_m": [
+        21.154661,
+        -8.468487
+      ],
+      "source": "user_red_dot_on_original_jpeg",
+      "status": "approximate_marker_only_not_navigation_waypoint"
+    },
+    {
+      "id": "D23",
+      "pixel_edge": [
+        712.9155,
+        399.0678
+      ],
+      "map_xy_m": [
+        35.084777,
+        -8.503389
+      ],
+      "source": "user_red_dot_on_original_jpeg",
+      "status": "approximate_marker_only_not_navigation_waypoint"
+    },
+    {
+      "id": "D24",
+      "pixel_edge": [
+        1061.86,
+        401.7938
+      ],
+      "map_xy_m": [
+        52.531999,
+        -8.639691
+      ],
+      "source": "user_red_dot_on_original_jpeg",
+      "status": "approximate_marker_only_not_navigation_waypoint"
+    },
+    {
+      "id": "D25",
+      "pixel_edge": [
+        201.8475,
+        435.8069
+      ],
+      "map_xy_m": [
+        9.531373,
+        -10.340346
+      ],
+      "source": "user_red_dot_on_original_jpeg",
+      "status": "approximate_marker_only_not_navigation_waypoint"
+    },
+    {
+      "id": "D26",
+      "pixel_edge": [
+        329.7722,
+        435.1162
+      ],
+      "map_xy_m": [
+        15.927612,
+        -10.305811
+      ],
+      "source": "user_red_dot_on_original_jpeg",
+      "status": "approximate_marker_only_not_navigation_waypoint"
+    }
+  ],
+  "exclusions": [
+    {
+      "id": "OUTSIDE_ENTRANCE",
+      "purpose": "excluded_from_survey_not_keepout",
+      "polygon_pixel": [
+        [
+          0,
+          197
+        ],
+        [
+          37,
+          197
+        ],
+        [
+          37,
+          317
+        ],
+        [
+          0,
+          317
+        ]
+      ],
+      "polygon_map_m": [
+        [
+          -0.561,
+          1.6
+        ],
+        [
+          1.289,
+          1.6
+        ],
+        [
+          1.289,
+          -4.4
+        ],
+        [
+          -0.561,
+          -4.4
+        ]
+      ]
+    }
+  ],
+  "mask": "hospital_zone_mask.json.gz",
+  "notes": [
+    "User-approved semantic labels carried onto the original PGM; manually traced geometry requires RViz review.",
+    "Original occupancy map and Nav2/coverage/navigation nodes are not modified.",
+    "Internal structures in R03/R04/R11/R12 stay part of their parent room, as approved.",
+    "Door points are approximate user annotations, not validated door widths, traversability, or action goals.",
+    "Mask fill uses source PGM white=254 only; gray=205 excluded. The supplied map YAML free_thresh=0.25 can classify 205 as free when loaded; this display package does not alter that setting.",
+    "No connection graph or navigation goals are generated in this display-only package.",
+    "Bedless v1: same 27 polygon borders; four removed CGMClassic beds represented by 2378 new source-white survey cells across R02A/B, R10A/B. Separate experimental environment; require LiDAR remeasurement."
+  ]
+}

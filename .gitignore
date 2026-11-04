@@ -26,3 +26,11 @@ log/
 # Python generated files
 __pycache__/
 *.pyc
+/logs/
+/backups/
+*.bak
+*.bak_*
+*.before_*
+*.pre_*
+.pytest_cache/
+.DN011_visibility_*_install.json

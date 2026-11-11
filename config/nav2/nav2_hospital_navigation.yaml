@@ -12,6 +12,14 @@ amcl:
     beam_skip_threshold: 0.3
     do_beamskip: false
     global_frame_id: map
+    # Map pose captured at the fixed Gazebo spawn on 2026-11-11.
+    # Recalibrate if the map or launch_disaster_hospital.sh spawn changes.
+    set_initial_pose: true
+    initial_pose:
+      x: 0.8113568866298326
+      y: 0.007720592935530343
+      z: 0.0
+      yaw: -0.0003233588128352519
     lambda_short: 0.1
     laser_likelihood_max_dist: 2.0
     laser_max_range: 100.0

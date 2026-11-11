@@ -1,0 +1,43 @@
+{
+  "version": "2.4",
+  "date": "2026-11-02",
+  "purpose": "Remove mission-fatal dependency on strict short bridge used only for heuristic candidate ranking",
+  "offline_mock_tests": 93,
+  "tests": "PASS",
+  "visibility_synthetic": {
+    "comparisons": 324,
+    "mismatches": 0
+  },
+  "install": "add-only isolated path zone_based_v2_4",
+  "user_project_validation": "NOT PERFORMED",
+  "live_ros2_gazebo_validation": "NOT PERFORMED",
+  "safety_policy": {
+    "ros_age_range_s": [
+      -0.1,
+      5.0
+    ],
+    "wall_age_max_s": 15.0,
+    "navigation_bad_input_before_cancel_s": 2.0
+  },
+  "new_start_policy": {
+    "start_cell_must_be_known_free": true,
+    "conservative_short_bridge_optional_for_rank_only": true,
+    "fallback_when_unavailable": "Navfn start probe of strictly safe goal endpoints; Euclidean ranking; no guessed bridge",
+    "mandatory_checks": [
+      "Navfn successful ComputePathToPose",
+      "path frame/centerline/start-end checks",
+      "goal footprint",
+      "goal target zone mask",
+      "fresh local start footprint",
+      "fresh stop and coverage",
+      "single owned goal"
+    ]
+  },
+  "unchanged": [
+    "Local Costmap guarded pre-send check",
+    "global/costmap/scan/odom time limits",
+    "cancel/stop semantics",
+    "Nav2 collision detection",
+    "Nav2/SLAM/Coverage/map/zones YAML"
+  ]
+}

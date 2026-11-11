@@ -56,7 +56,7 @@ def status(b,seen=None,seq=1,t=1.):
 
 
 def snapshot(b,pose=(2.,2.,0.)):
-    from zb_reference_planning import SensorModel
+    from planning_core import SensorModel
     cost=np.zeros_like(b[2],dtype=np.int16);cost[~b[3]]=100
     seen=np.zeros_like(b[2],dtype=bool)
     return dict(pose=pose,sensor=SensorModel(-math.pi,2*math.pi/80,80,.05,8.),

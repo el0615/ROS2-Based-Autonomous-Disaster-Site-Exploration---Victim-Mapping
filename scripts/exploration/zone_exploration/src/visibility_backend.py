@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 import threading
 import numpy as np
-from zb_reference_planning import visibility_cells as reference
+from planning_core import visibility_cells as reference
 
 
 class VisibilityBackend:

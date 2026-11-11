@@ -119,6 +119,8 @@ def evaluate_return_eligibility(manifest: dict, summary: dict, *, threshold: flo
     Any uncertainty, timeout, interruption, mixed terminal state -> BLOCKED.
     A PARTIAL return is never labeled a successful exploration mission.
     """
+    if manifest.get('options',{}).get('connectivity_aware'):
+        return _evaluate_connectivity_return(manifest,summary,threshold=threshold)
     complete, full_detail = check_mission_complete(manifest, summary, threshold=threshold)
     if complete:
         return {'eligible': True, 'exploration': 'FULL', 'detail': full_detail,
@@ -178,3 +180,168 @@ def evaluate_return_eligibility(manifest: dict, summary: dict, *, threshold: flo
             'detail': f'{sufficient}/27 zones >= {threshold*100:.0f}%; {len(deferred)} deferred; '
                       f'Nav2 succeeded {succeeded}/{sent}. Exploration remains PARTIAL.',
             'partial_zones': deferred}
+
+
+
+def _approved_path_cancellations(manifest, summary):
+    count=summary.get('path_blockage_canceled',0)
+    rows=summary.get('path_blockage_cancellations',[])
+    if type(count) is not int or count<0 or not isinstance(rows,list) or len(rows)!=count:return False,0
+    if count and (manifest.get('options',{}).get('path_blockage_check') is not True
+                  or summary.get('path_blockage_check') is not True):return False,0
+    ids=set();zones={}
+    for r in rows:
+        if not isinstance(r,dict):return False,0
+        e=r.get('evidence',{});gid=r.get('goal_id');z=e.get('zone') if isinstance(e,dict) else None
+        if (r.get('reason')!='PATH_BLOCKAGE_REPLAN_REQUIRED' or r.get('terminal')!='CANCELED'
+            or r.get('stop_confirmed') is not True or r.get('new_coverage') is not True
+            or not isinstance(gid,str) or len(gid)!=32 or any(x not in '0123456789abcdef' for x in gid)
+            or gid in ids or not isinstance(e,dict) or not isinstance(z,str)
+            or z not in summary.get('zones',{}) or e.get('bundle_signature')!=summary.get('zone_bundle_signature')
+            or e.get('persistent') is not True or e.get('translation_stalled') is not True
+            or e.get('scan_supported') is not True or e.get('prior_free') is not True or e.get('cost')!=100
+            or type(e.get('independent_samples')) is not int or e['independent_samples']<3):return False,0
+        ids.add(gid);zones[z]=zones.get(z,0)+1
+        if zones[z]>2:return False,0
+    return True,count
+
+
+def _evaluate_connectivity_return(manifest,summary,*,threshold=THRESHOLD):
+    """Completion classification is separate from safe return authorization.
+
+    No imports from ROS or the zone engine: validate serialized certificates
+    defensively. Existing HomeSupervisor still checks live sensors, path,
+    footprint, action state, arrival and stop before/after actual return.
+    """
+    def blocked(reason):
+        return dict(eligible=False,exploration='BLOCKED',detail=reason,partial_zones=[])
+    opts=manifest.get('options',{})
+    try:
+        t1=float(opts.get('threshold',float('nan')))
+        t2=float(summary.get('threshold',float('nan')))
+        sent=int(summary.get('sent',-1));ok=int(summary.get('nav_succeeded',-1))
+        aborted=int(summary.get('nav_aborted',0));canceled=int(summary.get('coverage_canceled',-1))
+    except (ValueError,TypeError,OverflowError):return blocked('invalid metadata')
+    if not all(math.isfinite(t) and abs(t-threshold)<1e-6 for t in (t1,t2)):
+        return blocked('threshold mismatch')
+    if not opts.get('execute') or not summary.get('execute') or opts.get('zone_ids') is not None:
+        return blocked('not a full-zone execute run')
+    if (not summary.get('connectivity_aware') or not manifest.get('zone_bundle_signature')
+            or manifest['zone_bundle_signature']!=summary.get('zone_bundle_signature')):
+        return blocked('missing or mismatched assessment identity')
+    terminal={'ALL_REQUESTED_ZONES_OBSERVED','ALL_ZONES_ASSESSED_WITH_LIMITS','PARTIAL_DEFERRED_REMAIN'}
+    if summary.get('state') not in terminal or summary.get('stop_reason') or summary.get('owned_goal_id'):
+        return blocked('not an orderly resolved/stopped mission')
+    valid_path_cancels,path_canceled=_approved_path_cancellations(manifest,summary)
+    if not valid_path_cancels:return blocked('unapproved path blockage cancellation')
+    valid_operational,operational_canceled=_approved_operational_cancellations(manifest,summary)
+    if not valid_operational:return blocked('unapproved operational cancellation')
+    if sent<1 or min(ok,aborted)<0 or ok+aborted+path_canceled+operational_canceled!=sent or canceled!=0:
+        return blocked('navigation terminal counts mismatch')
+    if aborted and not opts.get('continue_on_nav_abort'):
+        return blocked('unapproved aborted-navigation continuation')
+    zones=summary.get('zones')
+    if not isinstance(zones,dict) or len(zones)!=27:return blocked('expected 27 zones')
+    sufficient=0;limited=0;partial=[]
+    for name,rec in zones.items():
+        if not isinstance(rec,dict):return blocked('malformed zone')
+        try:value=float(rec.get('measured_percent',float('nan')))
+        except (ValueError,TypeError):return blocked('malformed coverage')
+        if not math.isfinite(value) or not 0<=value<=100:return blocked('invalid coverage')
+        state=rec.get('state')
+        if state=='OBSERVATION_SUFFICIENT' and value>=100*threshold-1e-5:
+            sufficient+=1
+        elif state=='OBSERVATION_LIMITED' and value<100*threshold:
+            assessment=rec.get('assessment') or {};e=assessment.get('evidence') or {}
+            flags=('catalog_complete','inputs_fresh','context_matches',
+                   'connectivity_verified','all_potential_information_accounted')
+            zero=('probes_failed','unrepresented_components','unknown_cells',
+                  'unobserved_free_cells','remaining_gain_views')
+            if (assessment.get('normal_termination') is not True
+                    or not all(e.get(k) is True for k in flags)
+                    or type(e.get('positions')) is not int or e['positions']<1
+                    or type(e.get('probes_succeeded')) is not int or e['probes_succeeded']!=e['positions']
+                    or any(type(e.get(k)) is not int or e[k]!=0 for k in zero)
+                    or not e.get('cost_key') or e.get('bundle_signature')!=summary['zone_bundle_signature']):
+                return blocked('invalid connectivity certificate: '+name)
+            limited+=1
+            partial.append(dict(zone=name,measured_percent=value,reason='VERIFIED_CONNECTED_OBSERVATION_LIMIT'))
+        elif state=='PARTIAL_DEFERRED' and isinstance(rec.get('deferred_reason'),str) and rec['deferred_reason']:
+            partial.append(dict(zone=name,measured_percent=value,reason=rec['deferred_reason']))
+        else:return blocked('unassessed/inconsistent zone: '+name)
+    if sufficient==27:
+        if summary['state']!='ALL_REQUESTED_ZONES_OBSERVED':return blocked('terminal state mismatch')
+        classification='FULL'
+    elif sufficient+limited==27:
+        if summary['state']!='ALL_ZONES_ASSESSED_WITH_LIMITS':return blocked('terminal state mismatch')
+        classification='LIMITED'
+    else:
+        if summary['state']!='PARTIAL_DEFERRED_REMAIN':return blocked('terminal state mismatch')
+        if sufficient+limited==0:return blocked('no resolved zone')
+        classification='PARTIAL'
+    return dict(eligible=True,exploration=classification,partial_zones=partial,
+        detail=f'{sufficient}/27 coverage targets, {limited} connectivity-certified limits; '
+               f'raw measured coverage unchanged; navigation succeeded={ok}, aborted={aborted}, path_canceled={path_canceled}, operational_canceled={operational_canceled}')
+
+
+def _approved_operational_cancellations(manifest, summary):
+    """Fail closed on new cancellation records; never authorize by a count alone.
+
+    Return transport/path/footprint/stationarity checks stay in HomeSupervisor.
+    These are serialized accounting checks, not a new physical safety proof.
+    """
+    count=summary.get('operational_canceled',0)
+    rows=summary.get('operational_cancellations',[])
+    if type(count) is not int or count<0 or not isinstance(rows,list) or len(rows)!=count:
+        return False,0
+    if not count:return True,0
+    opts=manifest.get('options',{})
+    if opts.get('mission_budget_guard') is not True or summary.get('mission_budget_guard') is not True:
+        return False,0
+    mapping={'stall_window_s':'guard_stall_window_s','stall_extent_m':'guard_stall_extent_m',
+             'stall_recoveries':'guard_stall_recoveries','goal_recovery_limit':'guard_goal_recovery_limit',
+             'zone_cancel_limit':'guard_zone_cancel_limit','work_base_s':'guard_zone_work_base_s',
+             'work_max_s':'guard_zone_work_max_s','extension_window_s':'guard_extension_window_s',
+             'extension_gain_pp':'guard_extension_gain_pp'}
+    ids={r.get('goal_id') for r in summary.get('path_blockage_cancellations',[]) if isinstance(r,dict)}
+    zone_counts={}
+    def finite(v):return type(v) in (int,float) and math.isfinite(v)
+    for row in rows:
+        if not isinstance(row,dict):return False,0
+        gid=row.get('goal_id');z=row.get('zone');e=row.get('evidence');cfg=row.get('settings')
+        if (row.get('schema')!='dn012_operational_cancel_v1' or row.get('terminal')!='CANCELED'
+                or row.get('stop_confirmed') is not True or row.get('new_coverage') is not True
+                or row.get('local_start_clear') is not True or not isinstance(gid,str)
+                or len(gid)!=32 or any(c not in '0123456789abcdef' for c in gid) or gid in ids
+                or z not in summary.get('zones',{}) or row.get('goal_kind') not in ('ENTRY','OBSERVE')
+                or row.get('bundle_signature')!=summary.get('zone_bundle_signature')
+                or not row.get('coverage_session') or row['coverage_session']!=summary.get('coverage_session')
+                or not isinstance(e,dict) or not isinstance(cfg,dict)
+                or e.get('physical_blockage_proven') is not False or e.get('normal_termination') is not False):
+            return False,0
+        if any(not finite(cfg.get(k)) or not finite(opts.get(v)) or cfg[k]!=opts[v] for k,v in mapping.items()):return False,0
+        if (not 5<=cfg['stall_window_s']<=120 or not .02<=cfg['stall_extent_m']<=1.
+                or type(cfg['stall_recoveries']) is not int or not 1<=cfg['stall_recoveries']<=30
+                or type(cfg['goal_recovery_limit']) is not int or not 0<=cfg['goal_recovery_limit']<=100
+                or type(cfg['zone_cancel_limit']) is not int or not 1<=cfg['zone_cancel_limit']<=3
+                or not 30<=cfg['work_base_s']<=cfg['work_max_s']<=1800):return False,0
+        start=row.get('requested_ros_s');stop=row.get('confirmed_ros_s')
+        if not finite(start) or not finite(stop) or stop<start:return False,0
+        reason=row.get('reason')
+        if e.get('reason')!=reason:return False,0
+        if reason=='NAVIGATION_STAGNATION_UNVERIFIED':
+            if (not finite(e.get('window_s')) or e['window_s']<cfg['stall_window_s']
+                    or not finite(e.get('extent_m')) or not 0<=e['extent_m']<cfg['stall_extent_m']
+                    or type(e.get('recovery_increase')) is not int or e['recovery_increase']<cfg['stall_recoveries']
+                    or type(e.get('sample_count')) is not int or e['sample_count']<3):return False,0
+        elif reason=='NAV_RECOVERY_BUDGET_UNVERIFIED':
+            if (cfg['goal_recovery_limit']<=0 or e.get('recovery_limit')!=cfg['goal_recovery_limit']
+                    or type(e.get('recoveries')) is not int or e['recoveries']<cfg['goal_recovery_limit']):return False,0
+        elif reason=='ZONE_WORK_BUDGET_UNVERIFIED':
+            if (not finite(e.get('work_time_ros_s')) or not finite(e.get('allowance_ros_s'))
+                    or e.get('expired') is not True or e['work_time_ros_s']<e['allowance_ros_s']
+                    or e['allowance_ros_s'] not in (cfg['work_base_s'],cfg['work_max_s'])):return False,0
+        else:return False,0
+        ids.add(gid);zone_counts[z]=zone_counts.get(z,0)+1
+        if zone_counts[z]>cfg['zone_cancel_limit']:return False,0
+    return True,count

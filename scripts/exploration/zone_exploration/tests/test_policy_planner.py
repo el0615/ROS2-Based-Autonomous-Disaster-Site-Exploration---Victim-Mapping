@@ -3,8 +3,8 @@ import unittest, ast, time
 from dataclasses import replace
 from zone_policy import ZoneMission, repeated, room_priority
 from zone_planner import ZonePlanner, refresh, is_inside, arrival_diagnostic
-from zb_reference_planning import Settings, SensorModel, current_input_error, validate_coverage
-from zb_reference_sequence import StopEvidence, validate_nav_path, validate_oriented_swept_path
+from planning_core import Settings, SensorModel, current_input_error, validate_coverage
+from sequence_core import StopEvidence, validate_nav_path, validate_oriented_swept_path
 
 class PolicyTests(unittest.TestCase):
     def setUp(self):
@@ -167,7 +167,7 @@ class PlannerTests(unittest.TestCase):
         maps = self.p.maps(self.s)
         self.assertTrue(maps['free'][20,20])
         self.assertFalse(maps['safe'][20,20])
-        from zb_reference_planning import conservative_start_bridge
+        from planning_core import conservative_start_bridge
         self.assertIsNone(conservative_start_bridge(maps['free'],maps['safe'],self.b[1],self.s['pose'],self.cfg))
         batch = self.p.entry_batch(self.s,[self.zone],[])
         self.assertEqual(batch['start_route_mode'],'NAVFN_START_PROBE_NO_CONSERVATIVE_BRIDGE')

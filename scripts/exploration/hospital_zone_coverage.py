@@ -29,6 +29,10 @@ from hospital_coverage_core import Coverage, load_bundle, planar_pose
 from hospital_zone_visualizer import verify_map
 
 
+sys.path.insert(0, str(Path(__file__).resolve().parent/'zone_exploration/src'))
+from resume_runtime import extend_parser, wrap_coverage
+
+
 def atomic_write(path: Path, content: bytes) -> None:
     temporary=path.with_name(path.name+'.tmp')
     temporary.write_bytes(content)
@@ -336,7 +340,7 @@ def build_node_type(args, data, geom, labels, known_free, signature, output_dir)
                 self.next_save=wall+5.0
                 self.save()
 
-    return HospitalCoverageNode
+    return wrap_coverage(HospitalCoverageNode, args, (data,geom,labels,known_free,signature), output_dir)
 
 
 def parser():
@@ -361,7 +365,7 @@ def parser():
     ap.add_argument('--text-height',type=float,default=.42)
     ap.add_argument('--no-points',action='store_true')
     ap.add_argument('--self-test',action='store_true')
-    return ap
+    return extend_parser(ap)
 
 
 def main():

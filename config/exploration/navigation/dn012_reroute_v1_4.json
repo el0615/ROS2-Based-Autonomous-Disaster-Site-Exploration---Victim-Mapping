@@ -1,0 +1,23 @@
+{
+  "version": "DN012_REROUTE_POINT_MEMORY_V1_4",
+  "scene_id": "disaster_hospital_static_v1",
+  "values_are_uncalibrated_pilot_defaults": true,
+  "detector": {
+    "min_extra_m": 3.0,
+    "min_fraction": 0.5,
+    "min_remaining_m": 1.0,
+    "max_projection_m": 0.6,
+    "new_start_tolerance_m": 0.5,
+    "goal_tolerance_m": 0.3,
+    "forward_offset_m": 0.7,
+    "sensor_lookahead_m": 3.0,
+    "confirmation_s": 0.5,
+    "confirmation_samples": 2,
+    "pending_timeout_s": 8.0,
+    "point_radius_m": 0.1,
+    "robot_envelope_m": 0.3093622472119053,
+    "safety_margin_m": 0.04,
+    "pose_guard_extra_m": 0.15,
+    "max_records": 256
+  }
+}

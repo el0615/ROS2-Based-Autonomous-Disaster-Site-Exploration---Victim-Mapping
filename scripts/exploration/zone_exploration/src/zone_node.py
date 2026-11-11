@@ -14,7 +14,7 @@ from __future__ import annotations
 import argparse
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -28,11 +28,21 @@ import uuid
 import numpy as np
 from hospital_coverage_core import Geometry, load_bundle, planar_pose
 from hospital_zone_visualizer import verify_map
-from zb_io import geometry_matches, stamp_s, atomic_json
-from zb_reference_planning import (Settings, SensorModel, array_fingerprint,
+from exploration_io import geometry_matches, stamp_s, atomic_json
+from planning_core import (Settings, SensorModel, array_fingerprint,
     current_input_error, validate_coverage, oriented_footprint_clear)
-from zb_reference_sequence import (StopEvidence,
-    validate_nav_path, safe_early_stop, json_candidate)
+from sequence_core import (StopEvidence,
+    validate_nav_path, safe_early_stop, json_candidate as _dn012_base_json_candidate)
+
+def json_candidate(candidate):
+    # DN012_TWO_PHASE_V1_2: all second-pass reports use a strict JSON boundary.
+    if isinstance(candidate, dict) and candidate.get('second_pass'):
+        from two_phase import safe_candidate
+        return safe_candidate(candidate)
+    # DN012_REGION_RESCUE_V1.1: reporting only; input remains untouched.
+    if isinstance(candidate, dict) and 'residual_target_indices' in candidate:
+        candidate = {k: v for k, v in candidate.items() if k != 'residual_target_indices'}
+    return _dn012_base_json_candidate(candidate)
 from zone_policy import ZoneMission, room_priority, angle_diff
 from costmap_diagnostics import snapshot_costmap_freshness
 from zone_planner import ZonePlanner, refresh as refresh_candidate, is_inside, arrival_diagnostic
@@ -43,16 +53,69 @@ STATUS = {0:'UNKNOWN',1:'ACCEPTED',2:'EXECUTING',3:'CANCELING',
           4:'SUCCEEDED',5:'CANCELED',6:'ABORTED'}
 
 
+def refresh_for_policy(candidate, observed, geom, cfg):
+    # DN012_TWO_PHASE_V1_2: positive target gain; no blind residual transit.
+    if candidate.get('second_pass'):
+        from two_phase import refresh_second_pass
+        return refresh_second_pass(candidate, observed, geom)
+    # DN012_REGION_RESCUE_V1: proposal gain gate only; safety gates unchanged.
+    if candidate.get('region_investigation'):
+        from regions import refresh_investigation
+        return refresh_investigation(candidate, observed, geom)
+    if candidate.get('audit_observation'):
+        # Audit sweeps retain even a single potentially new cell. This changes
+        # candidate ranking ONLY; measured Coverage and safety guards stay intact.
+        cfg = replace(cfg, min_gain_m2=geom.resolution**2 * .5)
+    return refresh_candidate(candidate, observed, geom, cfg)
+
+
+from resume_runtime import (extend_parser, prepare_mission_args,
+    wrap_mission, enrich_mission_report)
+
+
 def parser():
     root=Path(os.environ['ZB_PROJECT_ROOT'])
     p=argparse.ArgumentParser(description='Zone-first exploration. Default DRY RUN; --execute --supervised may move Gazebo J100.')
+    p.add_argument('--mission-budget-guard',action='store_true',help='Opt-in operational stagnation/work budgets and frozen deferrals')
+    p.add_argument('--guard-stall-window-s',type=float,default=20.)
+    p.add_argument('--guard-stall-extent-m',type=float,default=.20)
+    p.add_argument('--guard-stall-recoveries',type=int,default=5)
+    p.add_argument('--guard-goal-recovery-limit',type=int,default=20,help='Independent per-Goal recovery ceiling; 0 disables ceiling, never implies blockage')
+    p.add_argument('--guard-zone-cancel-limit',type=int,default=2)
+    p.add_argument('--guard-zone-work-base-s',type=float,default=180.)
+    p.add_argument('--guard-zone-work-max-s',type=float,default=300.)
+    p.add_argument('--guard-extension-window-s',type=float,default=60.)
+    p.add_argument('--guard-extension-gain-pp',type=float,default=1.)
+    p.add_argument('--path-blockage-check',action='store_true',help='Opt-in persistent sensor-backed path blockage monitoring')
+    p.add_argument('--prior-topology-fixed',action='store_true',help='Assessment assumption: no new passage through prior walls; not sensor proof')
+    p.add_argument('--path-topic',default='/j100_0001/plan')
+    p.add_argument('--connectivity-aware',action='store_true',help='Opt-in DN-012 Zone-Lock and evidence-gated termination')
+    p.add_argument('--zone-hard-goals',type=int,default=20,help='Budget exhaustion is PARTIAL, never completion')
+    p.add_argument('--audit-spacing-m',type=float,default=.60)
+    p.add_argument('--audit-headings',type=int,default=8)
+    p.add_argument('--audit-max-positions',type=int,default=1200)
+    p.add_argument('--audit-max-probes',type=int,default=1000)
+    p.add_argument('--audit-max-view-preflights',type=int,default=48,
+                   help='Per-Zone audit observation Nav2 preflight cap; exhaustion defers UNVERIFIED, never completes')
+    p.add_argument('--low-gain-stop-window',type=int,default=3,
+                   help='DN-012: distinct successful OBSERVE Goals in sliding plateau window; 0 disables')
+    p.add_argument('--low-gain-stop-total-pp',type=float,default=1.0,
+                   help='DN-012: defer UNVERIFIED if total measured Coverage gain in window is below this many percentage points')
+    p.add_argument('--audit-build-budget-s',type=float,default=30.)
+    p.add_argument('--audit-zone-budget-s',type=float,default=600.)
+    p.add_argument('--audit-max-restarts',type=int,default=2)
+    p.add_argument('--entry-access-max-probes',type=int,default=6)
+    p.add_argument('--entry-access-per-component',type=int,default=2)
+    p.add_argument('--entry-access-min-separation-m',type=float,default=.80)
+    p.add_argument('--entry-access-failed-radius-m',type=float,default=.50)
     p.add_argument('--execute',action='store_true')
     p.add_argument('--supervised',action='store_true',help='Explicit acknowledgment for supervised Gazebo navigation')
     p.add_argument('--max-goals',type=int,default=6,help='Includes both entry and observation Goals; NOT number of rooms')
     p.add_argument('--zone-ids',nargs='+',help='Optional subset; default all approved zones, no hardcoded whitelist')
     p.add_argument('--threshold',type=float,default=.90)
     p.add_argument('--max-views-per-zone',type=int,default=4)
-    p.add_argument('--zone-policy',choices=['rooms-first','nearest'],default='rooms-first')
+    # DN012_REROUTE_V1_4: environment-selected policy; original default preserved.
+    p.add_argument('--zone-policy',choices=['rooms-first','nearest'],default=os.environ.get('DN012_ZONE_POLICY','rooms-first'))
     p.add_argument('--entry-candidates',type=int,default=8)
     p.add_argument('--entry-inset-m',type=float,default=.45)
     p.add_argument('--entry-arrival-buffer-m',type=float,default=.20,help='Prefer deeper ENTRY targets (meters); no safety guard change')
@@ -80,10 +143,11 @@ def parser():
     p.add_argument('--entrance-nav-only',action='store_true',help='Reuse approved planner-only exterior entrance overlay, never alter Coverage')
     p.add_argument('--entrance-overlay-file',type=Path,default=root/'config/exploration/entrance_nav_only_overlay_v1.json')
     p.add_argument('--output-dir',type=Path,default=root/'logs/hospital_zone_mission')
-    return p
+    return extend_parser(p)
 
 
 def make_node_type(args,bundle,cfg,output):
+    prepare_mission_args(args, bundle)
     import rclpy
     from rclpy.node import Node
     from rclpy.time import Time
@@ -111,6 +175,16 @@ def make_node_type(args,bundle,cfg,output):
             self.book=ZoneMission(scope,cfg.threshold,args.max_views_per_zone,
                                   max_revisits=args.max_revisits,
                                   revisit_cooldown_s=args.revisit_cooldown_s)
+            if args.connectivity_aware:
+                from zone_policy import ConnectivityMission
+                self.book=ConnectivityMission(scope,cfg.threshold,args.max_views_per_zone,
+                    max_revisits=0,revisit_cooldown_s=args.revisit_cooldown_s,
+                    hard_zone_goals=args.zone_hard_goals,
+                    no_auto_revisit=args.mission_budget_guard)
+            self.connectivity=None
+            self.mission_guard=None
+            self.path_blockage=None
+            self.aborted_goals=0
             self.zones_by_id={z['id']:z for z in scope}
             self.zone_planner=ZonePlanner(bundle,cfg,entry_candidates=args.entry_candidates,
                 entry_inset=args.entry_inset_m,policy=args.zone_policy,
@@ -176,6 +250,19 @@ def make_node_type(args,bundle,cfg,output):
             self.info('costmap_diag_policy','[COSTMAP_DIAG_V2_2] receive/header/age diagnostics only; 5s ROS / 15s wall / 2s cancel gating UNCHANGED',0)
             self.info('zone_policy',f'[ZONE_POLICY] {args.zone_policy}; threshold={cfg.threshold}; entry_inset={args.entry_inset_m}m; local_candidates={args.max_candidates}; no permanent unreachable claims',0)
             self.info('logs',f'[LOG] {output}',0)
+            if args.connectivity_aware:
+                from connectivity_runtime import ConnectivityRuntime
+                self.connectivity=ConnectivityRuntime(self,bundle,cfg,args,output)
+            if args.path_blockage_check:
+                if not args.connectivity_aware:raise ValueError('BLOCKAGE_REQUIRES_CONNECTIVITY_POLICY')
+                from path_blockage_runtime import PathBlockageRuntime
+                from nav_msgs.msg import Path as NavigationPath
+                self.path_blockage=PathBlockageRuntime(self,bundle,cfg,args,output)
+                self.path_sub=self.create_subscription(NavigationPath,args.path_topic,
+                    self.path_blockage.on_plan,live)
+            if args.mission_budget_guard:
+                from mission_budget import MissionBudgetRuntime
+                self.mission_guard=MissionBudgetRuntime(self,bundle,cfg,args,output)
 
         def ros_s(self):return self.get_clock().now().nanoseconds*1e-9
 
@@ -192,6 +279,19 @@ def make_node_type(args,bundle,cfg,output):
         def event(self,event,**fields):
             row=dict(event=event,ros_time_s=self.ros_s(),wall_utc=datetime.now(timezone.utc).isoformat(),**fields)
             self.events_handle.write(json.dumps(row,ensure_ascii=False,allow_nan=False)+'\n');self.events_handle.flush()
+            # DN012_ZONE_LOCAL_V1_5_EVENT_HOOK
+            runtime=getattr(self,'connectivity',None)
+            if runtime is not None and hasattr(runtime,'on_local_zone_event'):
+                runtime.on_local_zone_event(event,fields)
+            # DN012_GLOBAL_BLOCKAGE_V1_3: persist detector witness IMMEDIATELY.
+            if event in ('PATH_BLOCKED_EVIDENCE','PATH_BLOCKAGE_STOP_CONFIRMED'):
+                runtime=getattr(self,'connectivity',None)
+                if runtime is not None and hasattr(runtime,'on_blockage_memory_event'):
+                    try:runtime.on_blockage_memory_event(event,fields)
+                    except Exception as exc:
+                        runtime.blockage_memory_fault=repr(exc)
+                        # NEVER prevent the original detector's owned cancellation.
+                        self.warn('blockage_memory_error','[BLOCKAGE_MEMORY_WRITE_ERROR] '+repr(exc),0)
 
         def transition(self,state):
             if state!=self.state:
@@ -204,6 +304,9 @@ def make_node_type(args,bundle,cfg,output):
             if self.reference_ok and not ok:self.fault='REFERENCE_MAP_CHANGED'
             if ok and not self.reference_ok:self.info('map','[MAP_OK] approved map fingerprint matches',0)
             self.reference_ok=bool(ok) and self.fault is None
+            # DN012_REGION_RESCUE_V1: retain only the already hash-verified map.
+            if self.reference_ok and os.environ.get('DN012_REGION_RESCUE') == '1':
+                self.region_reference_occupancy = np.asarray(msg.data,dtype=np.int16).reshape(labels.shape).copy()
             if not ok:self.warn('map_bad','[MAP_MISMATCH] '+reason)
 
         def on_status(self,msg):
@@ -310,6 +413,7 @@ def make_node_type(args,bundle,cfg,output):
                 if not frame:raise ValueError('Empty frame')
                 self.scan_entry=dict(model=model,frame=frame,stamp=stamp_s(msg.header.stamp),wall=time.monotonic())
             except (ValueError,TypeError):self.scan_entry=None
+            if self.path_blockage:self.path_blockage.on_scan(msg)
 
         def on_odom(self,msg):
             t=stamp_s(msg.header.stamp);v=msg.twist.twist.linear;w=msg.twist.twist.angular
@@ -424,16 +528,28 @@ def make_node_type(args,bundle,cfg,output):
             self.validated_plan_mode=None
             goal=ComputePathToPose.Goal();goal.goal=self.make_pose(c);goal.planner_id=args.planner_id;goal.use_start=False
             self.plan_send=self.plan_client.send_goal_async(goal);self.plan_handle=None;self.plan_result=None
-            self.plan_started=time.monotonic();self.plan_attempts+=1
+            self.plan_started=time.monotonic()
+            if not c.get('connectivity_probe'):self.plan_attempts+=1
             self.plan_snapshot=dict(epoch=inp['epoch'],pose=inp['pose'],cost_key=inp['cost']['key'])
             self.transition('PLAN_PENDING')
             self.info('plan',f'[PLAN_REQUESTED] zone={c["zone_id"]} xy=({c["x"]:.2f},{c["y"]:.2f}) yaw={c["yaw"]:.3f}; GridBased; no motion',0)
             self.event('PLAN_REQUESTED',candidate=json_candidate(c))
 
         def reject_candidate(self,reason):
+            # DN012_TWO_PHASE_V1_2: archive rejection before current is cleared.
+            if self.connectivity and hasattr(self.connectivity, 'on_plan_rejected'):
+                self.connectivity.on_plan_rejected(self.current,reason)
             self.warn('reject',f'[PLAN_REJECTED] {reason}; try another sampled view, not unreachable-room proof',0)
+            if self.connectivity and self.current and self.current.get('audit_observation'):
+                self.connectivity.note_audit_view_preflight_failure(self.current,reason)
+            if (self.current and self.current.get('connectivity_probe') and self.connectivity
+                    and reason in ('POSE_OR_SESSION_CHANGED','COSTMAP_CHANGED_REPLAN','INPUTS_NOT_FRESH','GOAL_NO_LONGER_NEEDED')):
+                self.connectivity.probe_failure(self.current,reason)
             if reason in ('POSE_OR_SESSION_CHANGED','COSTMAP_CHANGED_REPLAN','INPUTS_NOT_FRESH','GOAL_NO_LONGER_NEEDED'):
                 self.current=None;self.options=[];self.batch_zone=None;self.options_context=None
+            if self.current and self.current.get('connectivity_probe') and self.connectivity:
+                self.connectivity.probe_failure(self.current,reason)
+                self.current=None
             if self.current:
                 self.book.rejected.append(json_candidate(self.current));self.event('PLAN_REJECTED',reason=reason,candidate=json_candidate(self.current))
             self.current=None;self.plan_send=None;self.plan_handle=None;self.plan_result=None
@@ -444,6 +560,7 @@ def make_node_type(args,bundle,cfg,output):
             if not args.execute:raise RuntimeError('Dry-run navigation invariant')
             if not args.supervised or self.validated_plan_mode!='NAVFN_GOAL_VALIDATED':
                 raise RuntimeError('EXECUTION_REQUIRES_SUPERVISION_AND_NAVFN_GOAL_VALIDATION')
+            if self.current.get('connectivity_probe'):raise RuntimeError('PROBE_MUST_NEVER_MOVE_ROBOT')
             if self.sent_goals>=args.max_goals:raise RuntimeError('Goal bound invariant')
             if self.nav_send is not None or self.nav_handle is not None:raise RuntimeError('Overlapping goal invariant')
             c=self.current;goal=NavigateToPose.Goal();goal.pose=self.make_pose(c);goal.behavior_tree=''
@@ -454,6 +571,12 @@ def make_node_type(args,bundle,cfg,output):
             self.nav_terminal=None;self.cancel_reason=None;self.cancel_started=None;self.cancel_future=None
             self.nav_send=self.nav_client.send_goal_async(goal,feedback_callback=self.on_feedback,goal_uuid=u)
             self.nav_started=time.monotonic();self.sent_goals+=1
+            # Only a real navigation Goal invalidates a stationary audit
+            # catalog. Rejected planning-only views must keep the catalog.
+            if self.connectivity and c.get('audit_observation'):
+                self.connectivity.audit_observation_goal_sent(c)
+            if self.path_blockage:self.path_blockage.begin(inp)
+            if self.mission_guard:self.mission_guard.begin(inp)
             self.book.activate(c['zone_id'])
             self.phase='ENTERING_ZONE' if c['goal_kind']=='ENTRY' else 'OBSERVING_ZONE'
             self.prefetch_for=None
@@ -464,6 +587,7 @@ def make_node_type(args,bundle,cfg,output):
         def on_feedback(self,msg):
             if self.nav_uuid is None or bytes(msg.goal_id.uuid).hex()!=self.nav_uuid:return
             f=msg.feedback
+            if self.mission_guard:self.mission_guard.note_feedback(msg)
             self.info('feedback',f'[NAV_FEEDBACK] {self.sent_goals}/{args.max_goals} remaining={f.distance_remaining:.2f}m recoveries={f.number_of_recoveries}')
             # Recovery alone is intentionally NEVER a cancellation trigger.
 
@@ -503,7 +627,10 @@ def make_node_type(args,bundle,cfg,output):
                 self.stop_evidence.reset(after=self.post_result_ros)
                 self.transition('WAIT_STOP_AND_COVERAGE')
                 if self.nav_terminal==6 and not args.continue_on_nav_abort:self.request_stop('NAV_ABORTED_INSPECT_BEFORE_RETRY')
-                elif self.nav_terminal==5 and self.cancel_reason!='COVERAGE_SUFFICIENT':
+                elif (self.nav_terminal==5 and self.cancel_reason!='COVERAGE_SUFFICIENT'
+                      and not (self.path_blockage and self.path_blockage.authorizes_cancel())
+                       and not (self.mission_guard and self.mission_guard.authorizes_cancel())
+                       and not (self.connectivity and hasattr(self.connectivity, 'authorizes_region_cancel') and self.connectivity.authorizes_region_cancel())):
                     self.request_stop(self.stop_requested or 'EXTERNAL_OR_SAFETY_CANCEL')
                 elif self.nav_terminal not in (4,5,6):self.request_stop('UNEXPECTED_NAV_RESULT')
             # Handle only the preflight action below (never during an owned navigation).
@@ -540,12 +667,29 @@ def make_node_type(args,bundle,cfg,output):
                     # prediction during execution. This is not a safety guarantee.
                     # Keep the approved zone mask/goal-footprint invariants.
                     z=self.zones_by_id[self.current['zone_id']]
-                    if not is_inside(z,(self.current['x'],self.current['y'],self.current['yaw']),bundle,cfg):
+                    # DN012_TWO_PHASE_V1_2: approved safe exterior viewpoint is allowed ONLY in pass 2.
+                    if self.current.get('second_pass'):
+                        if not self.connectivity or not hasattr(self.connectivity, 'validate_second_plan'):
+                            raise ValueError('SECOND_PASS_POLICY_NOT_ACTIVE')
+                        self.connectivity.validate_second_plan(self.current,inp,points)
+                    elif not is_inside(z,(self.current['x'],self.current['y'],self.current['yaw']),bundle,cfg):
                         raise ValueError('GOAL_NOT_INSIDE_TARGET_ZONE')
+                    # DN012_GLOBAL_BLOCKAGE_V1_3: common primary/second-path screen.
+                    if (self.connectivity and hasattr(self.connectivity,'blockage_memory_guard')
+                            and not self.current.get('connectivity_probe')):
+                        if self.connectivity.blockage_memory_guard(
+                                self.current,inp,points,'PLAN_PREFLIGHT'):
+                            raise ValueError('BLOCKAGE_MEMORY_ROUTE_HELD')
                     self.event('NAVFN_GOAL_CHECK_OK',goal_kind=self.current['goal_kind'],
                                path_length_m=length)
-                    c=refresh_candidate(self.current,inp['observed'],geom,cfg)
-                    if c is None or self.book.records[c['zone_id']].state in ('THRESHOLD_PENDING','OBSERVATION_SUFFICIENT'):
+                    if self.current.get('connectivity_probe') and self.connectivity:
+                        self.connectivity.probe_success(self.current,inp,points,length)
+                        self.current=None;self.plan_send=None;self.plan_handle=None;self.plan_result=None
+                        self.validated_plan_mode=None;self.current_path=[];self.current_path_length=None
+                        self.transition('SELECTING')
+                        return  # Planning-only probe NEVER enters READY_TO_SEND.
+                    c=refresh_for_policy(self.current,inp['observed'],geom,cfg)
+                    if c is None or (not c.get('second_pass') and self.book.records[c['zone_id']].state in ('THRESHOLD_PENDING','OBSERVATION_SUFFICIENT')):
                         raise ValueError('GOAL_NO_LONGER_NEEDED')
                     self.current=c
                 except Exception as exc:self.reject_candidate(str(exc));return
@@ -567,6 +711,9 @@ def make_node_type(args,bundle,cfg,output):
 
         def finish(self,state,code=0):
             if self.done:return
+            # DN012_TWO_PHASE_V1_2: untested residuals remain explicitly UNVERIFIED.
+            if self.connectivity and hasattr(self.connectivity, 'on_mission_finish'):
+                self.connectivity.on_mission_finish(state)
             self.exit_code=code;self.transition(state);self.done=True
             self.event('SUMMARY',state=state,sent=self.sent_goals,succeeded=self.succeeded_goals,
                        coverage_cancels=self.coverage_cancels,zones=self.book.summary())
@@ -597,16 +744,41 @@ def make_node_type(args,bundle,cfg,output):
                 self.info('coverage_wait','[WAIT_COVERAGE] require a NEW post-result observation')
                 if now-self.post_result_ros>20:self.finish('POST_RESULT_COVERAGE_TIMEOUT',2)
                 return
+            # DN012_TWO_PHASE_V1_2: original terminal/stop/new-scan gates above are mandatory.
+            if self.connectivity and hasattr(self.connectivity, 'after_second_result'):
+                if self.connectivity.after_second_result(inp):return
             zone_id=self.current['zone_id']
             r=self.book.records[zone_id]
             if r.state=='THRESHOLD_PENDING':
                 if now-self.post_result_ros>20:self.finish('POST_RESULT_THRESHOLD_TIMEOUT',2)
                 return
-            if self.nav_terminal==6:
+            if (self.connectivity and self.current.get('goal_kind')=='OBSERVE'
+                    and self.nav_terminal!=4):
+                self.connectivity.reset_low_gain_history(zone_id)
+            if self.nav_terminal==5 and self.mission_guard and self.mission_guard.authorizes_cancel():
+                if not self.mission_guard.after_confirmed_stop(inp):return
+            elif self.nav_terminal==5 and self.path_blockage and self.path_blockage.authorizes_cancel():
+                if not self.path_blockage.after_confirmed_stop(inp):return
+            elif self.nav_terminal==6:
                 if not args.continue_on_nav_abort or not self.local_start_clear(inp):
                     self.finish('NAV_ABORTED_INSPECT_BEFORE_RETRY',2);return
-                self.book.defer(zone_id,'NAV_ABORTED_AFTER_CONFIRMED_STOP')
-                self.event('ZONE_DEFERRED',zone=zone_id,reason='NAV_ABORTED_AFTER_CONFIRMED_STOP')
+                self.aborted_goals+=1
+                if self.connectivity:
+                    self.book.nav_abort_counts[zone_id]+=1
+                    self.book.rejected.append(json_candidate(self.current))
+                    if self.current.get('goal_kind')=='ENTRY':
+                        self.connectivity.note_entry_abort(self.current)
+                    if self.book.nav_abort_counts[zone_id] <= 2:
+                        self.book.activate(zone_id)
+                        self.book.audit_requested[zone_id]=('ENTRY_NAV_ABORTED_ACCESS_RECHECK'
+                            if self.current.get('goal_kind')=='ENTRY'
+                            else 'NAV_ABORTED_ALTERNATIVE_AFTER_CONFIRMED_STOP')
+                        self.event('ZONE_ALTERNATIVE_AFTER_ABORT',zone=zone_id,attempt=self.book.nav_abort_counts[zone_id])
+                    else:
+                        self.book.finish_partial(zone_id,'NAV_ABORT_BUDGET_UNVERIFIED')
+                else:
+                    self.book.defer(zone_id,'NAV_ABORTED_AFTER_CONFIRMED_STOP')
+                    self.event('ZONE_DEFERRED',zone=zone_id,reason='NAV_ABORTED_AFTER_CONFIRMED_STOP')
             else:
                 record=self.book.record_visit(self.current,self.before_fraction,r.measured,
                                                STATUS[self.nav_terminal],self.cancel_reason)
@@ -617,6 +789,8 @@ def make_node_type(args,bundle,cfg,output):
                 inside=is_inside(self.zones_by_id[zone_id],inp['pose'],bundle,cfg)
                 if inside:
                     self.book.mark_entered(zone_id)
+                    if self.connectivity and self.current.get('entry_access_recovery'):
+                        self.connectivity.entry_reached(zone_id)
                     self.event('ENTRY_CONFIRMED',zone=zone_id,pose=list(inp['pose']),goal_kind=self.current['goal_kind'])
                     self.info('entry',f'[ENTRY_CONFIRMED] {zone_id}; measured pose/footprint inside target mask',0)
                 elif not self.book.is_complete(zone_id):
@@ -652,6 +826,13 @@ def make_node_type(args,bundle,cfg,output):
                             retry_attempts=st.entry_arrival_retries)
                         self.info('entry_deferred',f'[ZONE_DEFERRED] {zone_id} '
                             'entry arrival mismatch; alternate exhausted or unsafe',0)
+                # Only real successful observation navigation, fresh post-result
+                # Coverage, verified stop and confirmed Zone footprint can count.
+                # Never turn low gain into a 96% completion certificate.
+                if self.connectivity and self.current.get('goal_kind')=='OBSERVE':
+                    self.connectivity.consider_low_gain_plateau(
+                        record,self.session_id,inside and self.nav_terminal==4)
+            if self.mission_guard:self.mission_guard.finish_terminal()
             self.nav_send=None;self.nav_handle=None;self.nav_result=None;self.nav_uuid=None
             self.nav_terminal=None;self.cancel_reason=None;self.cancel_future=None;self.post_result_ros=None
             self.current=None;self.options=[];self.current_path=[];self.batch_zone=None
@@ -730,6 +911,8 @@ def make_node_type(args,bundle,cfg,output):
             self.transition('SELECTING');return True
 
         def prefetch_during_navigation(self,inp):
+            # DN012_TWO_PHASE_V1_2: no competing legacy local-view prefetch in pass 2.
+            if self.current and self.current.get('second_pass'):return
             if inp is None or self.stop_requested or self.current is None:return
             if self.worker is not None:
                 self.collect_job(inp);return
@@ -741,8 +924,13 @@ def make_node_type(args,bundle,cfg,output):
             self.submit_job('PREFETCH',inp,[self.zones_by_id[zid]])
 
         def select_zone_goal(self,inp):
+            # DN012_TWO_PHASE_V1_2: before all_complete, including >=96% zones.
+            if self.connectivity and hasattr(self.connectivity, 'selection_hook'):
+                if self.connectivity.selection_hook(inp):return
             now=self.ros_s();wall=time.monotonic()
             if self.book.all_complete():self.finish('ALL_REQUESTED_ZONES_OBSERVED');return
+            if self.connectivity and self.book.all_resolved():
+                self.finish('ALL_ZONES_ASSESSED_WITH_LIMITS');return
             if self.sent_goals>=args.max_goals:self.finish('GOAL_LIMIT_REACHED');return
             if self.plan_attempts>=args.max_plan_attempts:self.finish('PLAN_ATTEMPT_LIMIT_PARTIAL');return
             if not self.plan_client.server_is_ready() or (args.execute and not self.nav_client.server_is_ready()):
@@ -750,12 +938,18 @@ def make_node_type(args,bundle,cfg,output):
             if not self.stop_evidence.ready(now,wall):
                 self.info('stop','[WAIT_STOP] fresh stationary odometry required before new Goal');return
             if wall-self.boot_wall<2.:return
+            if self.mission_guard and self.mission_guard.before_selection(inp):
+                if self.connectivity and hasattr(self.connectivity, 'budget_deferred'):self.connectivity.budget_deferred(inp)
+                return
             if self.worker is not None:
                 if not self.worker.done():self.publish_report();return
                 self.collect_job(inp)
                 if self.stop_requested:return
+            if self.connectivity and self.connectivity.step(inp):return
             for zid in self.book.reopen_changed():
-                self.event('ZONE_REOPENED',zone=zid,reason='CHANGED_COSTMAP_OR_OTHER_ZONE_PROGRESS')
+                if self.connectivity:self.connectivity.failed_entries.pop(zid,None)
+                self.event('ZONE_REOPENED',zone=zid,
+                           reason='NEW_COSTMAP_AND_OTHER_ZONE_PROGRESS_RETRY_ONCE')
             if self.options_context is not None:
                 c=self.options_context
                 if (inp['epoch']!=c['epoch'] or inp['cost']['key']!=c['cost_key']
@@ -765,7 +959,7 @@ def make_node_type(args,bundle,cfg,output):
             while self.options:
                 c=self.options.pop(0)
                 if self.book.records[c['zone_id']].state in ('OBSERVATION_SUFFICIENT','THRESHOLD_PENDING','PARTIAL_DEFERRED'):continue
-                c=refresh_candidate(c,inp['observed'],geom,cfg)
+                c=refresh_for_policy(c,inp['observed'],geom,cfg)
                 if c is None:continue
                 self.event('ZONE_GOAL',candidate=json_candidate(c))
                 self.info('chosen',f'[ZONE_GOAL] kind={c["goal_kind"]} zone={c["zone_id"]} xy=({c["x"]:.2f},{c["y"]:.2f}) yaw={c["yaw"]:.3f} predicted_new={c["new_area_m2"]:.2f}m2',0)
@@ -776,6 +970,7 @@ def make_node_type(args,bundle,cfg,output):
                     self.book.defer(self.batch_zone,reason)
                     self.event('ZONE_DEFERRED',zone=self.batch_zone,reason=reason)
                 self.batch_zone=None;self.options_context=None
+            if self.connectivity and self.connectivity.step(inp):return
             eligible=self.book.eligible()
             if not eligible:
                 if self.book.pending():self.info('threshold','[WAIT_THRESHOLD_CONFIRMATION]');return
@@ -807,11 +1002,18 @@ def make_node_type(args,bundle,cfg,output):
                         self.info('complete_'+zid,f'[ZONE_COMPLETE] {zid} measured={self.book.records[zid].measured*100:.1f}%; skip extra views',0)
                         self.event('ZONE_COMPLETE',zone=zid,measured_percent=self.book.records[zid].measured*100)
                 except ValueError as exc:self.fault=str(exc);error=self.fault;inp=None
+            # DN012_REGION_RESCUE_V1: read-only persistent sensor evidence.
+            if inp is not None and self.connectivity and hasattr(self.connectivity, 'region_tick'):
+                self.connectivity.region_tick(inp)
+            if self.path_blockage and getattr(self.path_blockage,'reroute',None):
+                self.path_blockage.reroute.health(inp)
             self.poll_actions(inp)
             if self.done:return
+            if self.mission_guard:self.mission_guard.account(inp if error is None else None)
             if self.foreign_active():
                 self.request_stop('OTHER_NAVIGATION_GOAL_ACTIVE')
             nav_inflight=self.nav_uuid is not None and self.nav_terminal is None
+            if self.path_blockage and error:self.path_blockage.suspend()
             if nav_inflight and error:
                 if self.bad_since is None:self.bad_since=wall
                 if self.fault or wall-self.bad_since>=2.:self.request_stop('DATA_LOSS_'+error)
@@ -827,6 +1029,8 @@ def make_node_type(args,bundle,cfg,output):
                     self.finish(self.stop_requested,0 if self.stop_requested.startswith('USER_') else 2)
                 self.publish_report();return
             if nav_inflight:
+                if self.path_blockage:self.path_blockage.step(inp)
+                if self.mission_guard:self.mission_guard.step(inp)
                 self.prefetch_during_navigation(inp)
                 if inp is not None and self.book.is_complete(self.current['zone_id']):
                     if False and self.early_stop_area_ok(inp):
@@ -842,7 +1046,14 @@ def make_node_type(args,bundle,cfg,output):
             if self.plan_send is not None or self.plan_handle is not None:
                 if wall-self.plan_started>15:self.request_stop('PLAN_RESPONSE_TIMEOUT')
                 self.publish_report();return
+            # DN012_REROUTE_V1_4: apply mode requires actual filter subscription/costmap acknowledgement.
+            if self.path_blockage and getattr(self.path_blockage,'reroute',None):
+                if not self.path_blockage.reroute.ready(inp):
+                    self.publish_report();return
             if self.state=='READY_TO_SEND':
+                if self.mission_guard and self.mission_guard.before_selection(inp):
+                    if self.connectivity and hasattr(self.connectivity, 'budget_deferred'):self.connectivity.budget_deferred(inp)
+                    self.publish_report();return
                 if not args.execute:
                     self.publish_markers();self.finish('DRY_RUN_PASS');return
                 if not self.stop_evidence.ready(now,wall):
@@ -852,11 +1063,27 @@ def make_node_type(args,bundle,cfg,output):
                         or inp['cost']['key']!=self.plan_snapshot['cost_key']):
                     self.options=[];self.current=None;self.batch_zone=None;self.validated_plan_mode=None
                     self.transition('SELECTING');return
-                if self.book.records[self.current['zone_id']].state in ('THRESHOLD_PENDING','OBSERVATION_SUFFICIENT'):
+                if not self.current.get('second_pass') and self.book.records[self.current['zone_id']].state in ('THRESHOLD_PENDING','OBSERVATION_SUFFICIENT'):
                     self.options=[];self.current=None;self.batch_zone=None;self.validated_plan_mode=None
                     self.transition('SELECTING');return
                 if not self.local_start_clear(inp):
                     self.request_stop('LOCAL_START_NOT_CLEAR_OR_STALE');return
+                # DN012_TWO_PHASE_V1_2: check again at the actual send boundary.
+                if self.current.get('second_pass'):
+                    try:self.connectivity.before_second_send(self.current,inp,self.current_path)
+                    except (ValueError, KeyError) as exc:
+                        self.reject_candidate(str(exc));self.publish_report();return
+                # DN012_GLOBAL_BLOCKAGE_V1_3: repeat gate at the real send boundary.
+                if self.connectivity and hasattr(self.connectivity,'blockage_memory_guard'):
+                    try:
+                        held=self.connectivity.blockage_memory_guard(
+                            self.current,inp,self.current_path,'PRE_SEND')
+                    except Exception as exc:
+                        self.warn('memory_presend','[BLOCKAGE_MEMORY_GUARD_ERROR] '+repr(exc),0)
+                        self.request_stop('BLOCKAGE_MEMORY_GUARD_ERROR');self.publish_report();return
+                    if held:
+                        self.reject_candidate('BLOCKAGE_MEMORY_ROUTE_HELD')
+                        self.publish_report();return
                 self.nav_request(inp);self.publish_report();return
             self.select_zone_goal(inp)
             self.publish_report()
@@ -894,10 +1121,23 @@ def make_node_type(args,bundle,cfg,output):
             wall=time.monotonic()
             if not force and wall<self.next_report:return
             self.next_report=wall+2.
+            # DN012_REGION_RESCUE_V1: sidecar evidence; no navigation calls.
+            if self.connectivity and hasattr(self.connectivity, 'publish_region_report'):
+                self.connectivity.publish_region_report()
             report=dict(schema='hospital_zone_mission_v1',implementation='zone_based_nav2_delegated_v2_4_start_bridge',state=self.state,phase=self.phase,
                         active_zone=self.book.active_zone,visibility=self.zone_planner.visibility.summary(),
                         execute=args.execute,goal_limit=args.max_goals,sent=self.sent_goals,
-                        nav_succeeded=self.succeeded_goals,coverage_canceled=self.coverage_cancels,
+                        nav_succeeded=self.succeeded_goals,nav_aborted=self.aborted_goals,
+                         mission_budget_guard=args.mission_budget_guard,
+                         mission_budget=None if self.mission_guard is None else self.mission_guard.summary(),
+                         operational_canceled=0 if self.mission_guard is None else len(self.mission_guard.records),
+                         operational_cancellations=[] if self.mission_guard is None else self.mission_guard.records,
+                         path_blockage_check=args.path_blockage_check,
+                        path_blockage_canceled=0 if self.path_blockage is None else len(self.path_blockage.records),
+                        path_blockage_cancellations=[] if self.path_blockage is None else self.path_blockage.records,
+                        connectivity_aware=args.connectivity_aware,
+                        connectivity_probes=0 if self.connectivity is None else self.connectivity.total_probes,
+                        coverage_canceled=self.coverage_cancels,
                         plan_attempts=self.plan_attempts,coverage_session=self.session_id,
                         zone_bundle_signature=signature,threshold=cfg.threshold,
                         early_cancel=False,current=json_candidate(self.current),
@@ -905,6 +1145,11 @@ def make_node_type(args,bundle,cfg,output):
                         stop_reason=self.stop_requested,cancel_reason=self.cancel_reason,
                         ros_time_s=self.ros_s(),zones=self.book.summary(),visits=self.book.visits,
                         disclaimer='Measured 2D spatial coverage, not victim-search completion; bounded trial, no guaranteed reachability')
+            if self.connectivity and hasattr(self.connectivity, 'region_summary'):
+                report['region_review'] = self.connectivity.region_summary()
+            if self.path_blockage and getattr(self.path_blockage,'reroute',None):
+                report['reroute_memory_v1_4']=self.path_blockage.reroute.summary()
+            report=enrich_mission_report(self,report)
             m=String();m.data=json.dumps(report,ensure_ascii=False,allow_nan=False)
             if rclpy.ok():self.status_pub.publish(m)
             atomic_json(output/'latest_status.json',report)
@@ -913,16 +1158,29 @@ def make_node_type(args,bundle,cfg,output):
 
         def close(self):
             self.zone_planner.stop()
+            if self.connectivity:self.connectivity.close()
             if self.worker:self.worker.cancel()
             self.pool.shutdown(wait=True,cancel_futures=True)
             self.publish_report(force=True)
+            if self.path_blockage and getattr(self.path_blockage,'reroute',None):
+                self.path_blockage.reroute.close()
             self.events_handle.close()
 
-    return HospitalSequence
+    return wrap_mission(HospitalSequence, args, bundle, cfg, output)
 
 
 def main():
     p=parser();args,ros_args=p.parse_known_args()
+    if args.mission_budget_guard:
+        if not args.connectivity_aware:p.error('--mission-budget-guard requires --connectivity-aware')
+        from mission_budget import GuardSettings
+        try:GuardSettings.from_args(args)
+        except ValueError as exc:p.error(str(exc))
+    if args.path_blockage_check and not args.connectivity_aware:p.error('--path-blockage-check requires --connectivity-aware')
+    if args.connectivity_aware:
+        args.max_revisits=0
+        if not any(t=='--threshold' or t.startswith('--threshold=') for t in sys.argv[1:]):
+            args.threshold=.96
     if ros_args and ros_args[0]!='--ros-args':p.error('Unknown arguments: '+' '.join(ros_args))
     if args.execute and not args.supervised:p.error('--execute requires --supervised for this Gazebo pilot')
     for val,lo,hi,name in [(args.max_goals,1,100,'max-goals'),(args.max_views_per_zone,1,20,'max-views-per-zone'),
@@ -935,6 +1193,17 @@ def main():
         p.error('Invalid entry-arrival-buffer-m')
     if not .1<=args.entry_inset_m<=2. or not 1<=args.planning_budget_s<=120 or not 0<=args.revisit_cooldown_s<=600:
         p.error('Invalid geometry/time budget')
+    if not (args.low_gain_stop_window==0 or 2<=args.low_gain_stop_window<=10):
+        p.error('Invalid low-gain-stop-window: use 0 or 2..10')
+    if not math.isfinite(args.low_gain_stop_total_pp) or not (0<args.low_gain_stop_total_pp<=10):
+        p.error('Invalid low-gain-stop-total-pp: use 0<gain<=10')
+    if args.connectivity_aware:
+        if not 1<=args.audit_max_view_preflights<=300:
+            p.error('Invalid audit-max-view-preflights')
+        from connectivity_audit import AuditSettings
+        AuditSettings(args.audit_spacing_m,args.audit_headings,args.audit_max_positions,
+            args.audit_max_probes,args.audit_build_budget_s,args.audit_zone_budget_s,args.audit_max_restarts).validate()
+        if not 1<=args.zone_hard_goals<=100:p.error('Invalid zone-hard-goals')
     cfg=Settings(threshold=args.threshold,max_candidates=args.max_candidates,
                  heading_samples=args.heading_samples);cfg.validate()
     bundle=load_bundle(args.zones.expanduser(),args.reference.expanduser())

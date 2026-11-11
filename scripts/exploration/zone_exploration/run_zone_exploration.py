@@ -19,6 +19,10 @@ def main():
             print('[MISSING_PROJECT_DEPENDENCY]',script_dir/name,file=sys.stderr)
             return 2
     os.environ['ZB_PROJECT_ROOT']=str(project)
+    shared_dir=Path(__file__).resolve().parent.parent
+    if shared_dir != script_dir:
+        # Shared algorithms belong to this checkout; project inputs keep precedence.
+        sys.path.insert(0,str(shared_dir))
     sys.path.insert(0,str(script_dir))
     sys.path.insert(0,str(Path(__file__).resolve().parent/'src'))
     sys.argv=[sys.argv[0],*rest]

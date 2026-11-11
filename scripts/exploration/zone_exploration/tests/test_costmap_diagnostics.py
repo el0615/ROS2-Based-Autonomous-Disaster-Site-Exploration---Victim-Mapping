@@ -8,7 +8,7 @@ fake_ros.install()
 os.environ['ZB_PROJECT_ROOT']='/synthetic'
 import zone_node
 from costmap_diagnostics import snapshot_costmap_freshness
-from zb_reference_planning import Settings
+from planning_core import Settings
 
 
 class CostmapSnapshotTests(unittest.TestCase):

@@ -1,0 +1,5 @@
+DN-011 Zone-Based v2.4; offline-only verification (2026-11-02)
+Python unittest: 93 tests PASS
+C visibility: 324 synthetic comparisons, 0 mismatches
+Source: original v2.3 copied; added 5 tests; no live ROS2/Gazebo
+New guard: START_CLEARANCE_BLOCKED estimator is a Navfn probe; local start and path checks remain mandatory

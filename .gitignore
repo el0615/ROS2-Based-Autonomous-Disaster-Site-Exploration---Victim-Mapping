@@ -34,3 +34,19 @@ __pycache__/
 *.pre_*
 .pytest_cache/
 .DN011_visibility_*_install.json
+
+# Local upgrade backups (keep on disk for recovery)
+/.dn012*/backups/
+/scripts/terminal_launcher/backups/
+/gazebo/worlds/disaster/disaster_hospital.sdf.stage2_backup_*
+
+# Generated exploration memory and lock files
+/.dn012_blockage_memory/map_*.json
+/.dn012_reroute_memory/points_*.json
+/.dn012_reroute_memory/points_*.lock
+
+# Local installation receipts and backup pointers
+/.dn012*/receipt.json
+/.dn012*/last_install.json
+/.dn012*/installed.json
+/.dn012*/latest_backup.txt

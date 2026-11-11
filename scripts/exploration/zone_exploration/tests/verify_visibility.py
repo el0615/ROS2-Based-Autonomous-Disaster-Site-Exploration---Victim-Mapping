@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Deterministic synthetic Python-vs-C equivalence checks; no live ROS data."""
 from fixtures import *
-from zb_reference_planning import visibility_cells as reference, SensorModel
+from planning_core import visibility_cells as reference, SensorModel
 from zb_visibility_c import visibility_cells as accelerated
 import json, time
 

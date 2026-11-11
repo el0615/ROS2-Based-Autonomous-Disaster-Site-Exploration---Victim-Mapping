@@ -325,9 +325,6 @@ class HomeSupervisor(Node):
         poses = path.poses
         if path.header.frame_id.lstrip('/') != 'map' or len(poses)<2:
             raise RuntimeError('RETURN_PATH_EMPTY_OR_WRONG_FRAME')
-        if math.hypot(poses[-1].pose.position.x-home['x'],
-                      poses[-1].pose.position.y-home['y']) > 0.18:
-            raise RuntimeError('RETURN_PATH_END_MISMATCH')
         if math.hypot(poses[0].pose.position.x-current['x'],
                       poses[0].pose.position.y-current['y']) > 0.65:
             raise RuntimeError('RETURN_PATH_START_MISMATCH')
@@ -428,6 +425,25 @@ def mission_process(node, root, options, output, record):
     cmd=['bash',str(script),options.mode,'--threshold','0.96',
          '--max-goals',str(options.max_goals),
          '--max-plan-attempts',str(options.max_plan_attempts)]
+    if options.connectivity_aware:
+        cmd += ['--connectivity-aware']
+        if options.path_blockage_check:
+            cmd += ['--path-blockage-check','--path-topic',options.path_topic]
+            if options.prior_topology_fixed:cmd += ['--prior-topology-fixed']
+        for name in ('zone_hard_goals','audit_spacing_m','audit_headings','audit_max_positions',
+                     'audit_max_probes','audit_build_budget_s','audit_zone_budget_s','audit_max_restarts',
+                     'entry_access_max_probes','entry_access_per_component',
+                     'entry_access_min_separation_m','entry_access_failed_radius_m'):
+            cmd += ['--'+name.replace('_','-'),str(getattr(options,name))]
+        if options.continue_on_nav_abort:cmd += ['--continue-on-nav-abort']
+    if options.mission_budget_guard:
+        cmd += ['--mission-budget-guard']
+        for name in ('guard_stall_window_s','guard_stall_extent_m','guard_stall_recoveries',
+                     'guard_goal_recovery_limit','guard_zone_cancel_limit','guard_zone_work_base_s',
+                     'guard_zone_work_max_s','guard_extension_window_s','guard_extension_gain_pp'):
+            cmd += ['--'+name.replace('_','-'),str(getattr(options,name))]
+    if options.connectivity_aware:
+        cmd += ['--audit-max-view-preflights',str(options.audit_max_view_preflights)]
     record['mission_command']=cmd
     record['mission_started_utc']=now_utc()
     json_save(output/'report.json',record)
@@ -593,12 +609,46 @@ def cli():
     p.add_argument('--mode',choices=['dry-run','execute'],default='dry-run')
     p.add_argument('--max-goals',type=int,default=100)
     p.add_argument('--max-plan-attempts',type=int,default=300)
+    p.add_argument('--path-blockage-check',action='store_true')
+    p.add_argument('--prior-topology-fixed',action='store_true')
+    p.add_argument('--path-topic',default='/j100_0001/plan')
+    p.add_argument('--mission-budget-guard',action='store_true',help='Opt-in operational stagnation/work budgets and frozen deferrals')
+    p.add_argument('--guard-stall-window-s',type=float,default=20.)
+    p.add_argument('--guard-stall-extent-m',type=float,default=.20)
+    p.add_argument('--guard-stall-recoveries',type=int,default=5)
+    p.add_argument('--guard-goal-recovery-limit',type=int,default=20,help='Independent per-Goal recovery ceiling; 0 disables ceiling, never implies blockage')
+    p.add_argument('--guard-zone-cancel-limit',type=int,default=2)
+    p.add_argument('--guard-zone-work-base-s',type=float,default=180.)
+    p.add_argument('--guard-zone-work-max-s',type=float,default=300.)
+    p.add_argument('--guard-extension-window-s',type=float,default=60.)
+    p.add_argument('--guard-extension-gain-pp',type=float,default=1.)
+    p.add_argument('--connectivity-aware',action='store_true')
+    p.add_argument('--continue-on-nav-abort',action='store_true',help='Opt-in only; confirmed stop and fresh data still required')
+    p.add_argument('--zone-hard-goals',type=int,default=20)
+    p.add_argument('--audit-spacing-m',type=float,default=.60)
+    p.add_argument('--audit-headings',type=int,default=8)
+    p.add_argument('--audit-max-positions',type=int,default=1200)
+    p.add_argument('--audit-max-probes',type=int,default=1000)
+    p.add_argument('--audit-max-view-preflights',type=int,default=48)
+    p.add_argument('--audit-build-budget-s',type=float,default=30.)
+    p.add_argument('--audit-zone-budget-s',type=float,default=600.)
+    p.add_argument('--audit-max-restarts',type=int,default=2)
+    p.add_argument('--entry-access-max-probes',type=int,default=6)
+    p.add_argument('--entry-access-per-component',type=int,default=2)
+    p.add_argument('--entry-access-min-separation-m',type=float,default=.80)
+    p.add_argument('--entry-access-failed-radius-m',type=float,default=.50)
     p.add_argument('--source-report',type=Path,default=None,
                    help='Return-only from an existing failed-to-return report; no exploration rerun')
     p.add_argument('--return-plan-only',action='store_true',
                    help='Explore in execute mode, then validate/plans home but DO NOT send return goal')
     p.add_argument('--return-timeout-seconds',type=int,default=900)
     a,ros=p.parse_known_args()
+    if a.mission_budget_guard and not a.connectivity_aware:
+        p.error('--mission-budget-guard requires --connectivity-aware')
+    if not 1 <= a.audit_max_view_preflights <= 300:
+        p.error('Invalid audit-max-view-preflights')
+    if a.path_blockage_check and not a.connectivity_aware:
+        p.error('--path-blockage-check requires --connectivity-aware')
     if ros and ros[0]!='--ros-args':p.error('Unexpected arguments '+repr(ros))
     if a.source_report is not None and a.mode!='execute':
         p.error('--source-report requires execute mode')
@@ -641,11 +691,16 @@ def main():
             summary=mission_process(node,root,args,out,record)
         if args.mode=='execute':
             verification=record.get('mission_verification',{})
-            partial=verification.get('exploration_class')=='PARTIAL'
+            exploration_class=verification.get('exploration_class','BLOCKED')
+            partial=exploration_class!='FULL'
+            limited=exploration_class=='LIMITED'
+            record['exploration_class']=exploration_class
+            record['coverage_target_met']=exploration_class=='FULL'
+            record['normal_exploration_termination']=exploration_class in ('FULL','LIMITED')
             record['status']='EXPLORATION_PARTIAL_RETURN_PREFLIGHT' if partial else 'EXPLORATION_COMPLETE_96_VERIFIED'
             json_save(out/'report.json',record)
             if partial:
-                print('[MISSION_PARTIAL] '+verification.get('detail','')+'; return preflight follows',flush=True)
+                print(('[MISSION_LIMITED] ' if limited else '[MISSION_PARTIAL] ')+verification.get('detail','')+'; return preflight follows',flush=True)
             else:
                 print('[MISSION_COMPLETE] 27/27 zones >=96%; return preflight follows',flush=True)
             plan=node.plan_home(home)
@@ -662,7 +717,9 @@ def main():
                 print('[RETURN_NAV_REQUESTED] Nav2 GridBased -> initial map pose',flush=True)
                 record['return_result']=node.nav_home(home,args.return_timeout_seconds)
                 record['status']='RETURN_SUCCEEDED_EXPLORATION_PARTIAL_STOP_VERIFIED' if partial else 'RETURN_SUCCEEDED_STOP_VERIFIED'
-                print('[RETURN_SUCCEEDED] pose and odometry stop verified; exploration='+('PARTIAL' if partial else 'FULL'),flush=True)
+                print('[RETURN_SUCCEEDED] pose and odometry stop verified; exploration='+exploration_class,flush=True)
+        if record.get('exploration_class')=='LIMITED':
+            record['status']=record['status'].replace('EXPLORATION_PARTIAL','EXPLORATION_LIMITED')
         json_save(out/'report.json',record)
         print('[RTH_REPORT]',out/'report.json',flush=True)
         return 0

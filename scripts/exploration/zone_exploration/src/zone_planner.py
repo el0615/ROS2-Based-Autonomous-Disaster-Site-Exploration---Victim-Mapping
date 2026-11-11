@@ -13,7 +13,7 @@ import time
 import numpy as np
 from scipy import ndimage
 from scipy.sparse.csgraph import dijkstra
-from zb_reference_planning import (
+from planning_core import (
     conservative_safe, conservative_start_bridge, path_graph,
     generate_candidates, oriented_footprint_clear)
 from zone_policy import room_priority, repeated

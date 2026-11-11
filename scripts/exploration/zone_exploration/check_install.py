@@ -32,9 +32,13 @@ def main():
             'config/exploration/hospital_coverage_reference.json.gz']
         for relative in required:
             if not (project/relative).is_file():raise RuntimeError('Missing project file: '+relative)
-        sys.path.insert(0,str(project/'scripts/exploration'));sys.path.insert(0,str(ROOT/'src'))
+        script_dir=project/'scripts/exploration'
+        if ROOT.parent != script_dir:
+            # External data projects may predate the shared algorithm modules.
+            sys.path.insert(0,str(ROOT.parent))
+        sys.path.insert(0,str(script_dir));sys.path.insert(0,str(ROOT/'src'))
         from hospital_coverage_core import load_bundle
-        from zb_reference_planning import Settings, SensorModel
+        from planning_core import Settings, SensorModel
         from hospital_zone_visualizer import verify_map
         from entrance_navigation_overlay import apply_entrance_overlay
         b=load_bundle(project/'config/exploration/hospital_zones.json',project/'config/exploration/hospital_coverage_reference.json.gz')

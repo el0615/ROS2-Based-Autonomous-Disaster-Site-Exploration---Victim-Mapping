@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Shared rescue defaults. Source before applying a launcher's explicit policy.
+# Sourcing this file never starts ROS nodes or requests robot motion.
+export PYTHONNOUSERSITE=1
+export DN012_REGION_RESCUE=1 DN012_REGION_MODE=rescue DN012_REGION_TWO_PASS=1
+export DN012_REGION_MIN_AREA_M2="${DN012_REGION_MIN_AREA_M2:-0.5}"
+export DN012_REGION_PRIORITY_AREA_M2="${DN012_REGION_PRIORITY_AREA_M2:-1.0}"
+export DN012_SECOND_GOAL_MARGIN_M="${DN012_SECOND_GOAL_MARGIN_M:-0.10}"
+export DN012_SECOND_PATH_MARGIN_M="${DN012_SECOND_PATH_MARGIN_M:-0.02}"
+export DN012_BLOCKAGE_MEMORY=1
+export DN012_BLOCKAGE_MEMORY_RADIUS_M="${DN012_BLOCKAGE_MEMORY_RADIUS_M:-.40}"

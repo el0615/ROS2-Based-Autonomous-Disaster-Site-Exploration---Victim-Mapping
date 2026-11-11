@@ -5,7 +5,7 @@ import fake_ros
 fake_ros.install()
 os.environ['ZB_PROJECT_ROOT']='/synthetic'
 import zone_node
-from zb_reference_planning import Settings
+from planning_core import Settings
 
 class TransportTests(unittest.TestCase):
     def setUp(self):
@@ -56,7 +56,7 @@ class TransportTests(unittest.TestCase):
         # robot causes the OLD STRICT_SWEPT checker to reject the entire path.
         # The NEW pilot delegates path collision handling to Nav2; goal stays
         # valid and never lies on an occupied/unknown cell.
-        from zb_reference_sequence import validate_oriented_swept_path
+        from sequence_core import validate_oriented_swept_path
         self.s['cost']['values'][22,20]=99
         pts=[self.s['pose'][:2], (self.c['x'],self.c['y'])]
         with self.assertRaisesRegex(ValueError,'FOOTPRINT_SWEEP_COLLISION'):

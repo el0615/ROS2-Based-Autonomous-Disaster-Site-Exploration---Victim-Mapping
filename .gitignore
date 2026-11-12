@@ -2,6 +2,9 @@
 __pycache__/
 *.pyc
 
+# Local YOLO Python environment
+/.venv_yolo/
+
 # ROS build outputs
 build/
 install/

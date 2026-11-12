@@ -18,6 +18,6 @@ if [[ "$WORLD" == disaster ]]; then
   trap cleanup EXIT INT TERM
 fi
 
-ros2 launch clearpath_gz simulation.launch.py \
+ros2 launch "$PROJECT_ROOT/launch/hospital_simulation.launch.py" \
   setup_path:="$HOME/clearpath/" world:="${WORLD}_hospital" \
   x:=1.47 y:=20.62 yaw:=-1.58

@@ -224,7 +224,7 @@
       <uri>model://aws_robomaker_residential_Refrigerator_01</uri>
       <static>true</static>
       <name>aws_robomaker_residential_Refrigerator_01_1</name>
-      <pose>-9.28238 -24.1039 0.273 1.53636 -0 0</pose>
+      <pose>-9.28238 -24.5019 -0.042024 0.00317 -0 0</pose>
     </include>
     <include>
       <uri>model://aws_robomaker_residential_SofaB_01</uri>
@@ -518,7 +518,7 @@
       <uri>model://Chair</uri>
       <static>true</static>
       <name>Chair_3</name>
-      <pose>-2.93173 -1.31093 -0.121436 -0.078504 0.233894 -1.87719</pose>
+      <pose>-1.72517 -0.649121 0.038721 -0.078504 0.233894 -1.87719</pose>
     </include>
     <include>
       <uri>model://IVStand</uri>
@@ -8591,7 +8591,7 @@
       <uri>model://PatientFSit</uri>
       <static>true</static>
       <name>victim_lying_02</name>
-      <pose>7.73356 0.685099 0.153513 1.56455 0.046347 3.08719</pose>
+      <pose>7.21323 1.04686 -0.18459 0.018662 -0.851554 -1.58014</pose>
     </include>
     <light name="sun" type="directional">
       <pose>0 0 10 0 -0 0</pose>

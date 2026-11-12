@@ -56,7 +56,7 @@ sensors:
       urdf_enabled: true
       launch_enabled: true
       parent: default_mount
-      xyz: [0.0, 0.0, 0.0]
+      xyz: [0.0, 0.0, 0.12]
       rpy: [0.0, 0.0, 0.0]
       ros_parameters:
         intel_realsense:
